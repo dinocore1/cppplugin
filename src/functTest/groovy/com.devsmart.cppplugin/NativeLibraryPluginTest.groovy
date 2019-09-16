@@ -8,6 +8,8 @@ import spock.lang.Specification
 
 class NativeLibraryPluginTest extends Specification {
 
+    //see: https://github.com/gradle/gradle/blob/master/subprojects/language-native/src/test/groovy/org/gradle/language/cpp/plugins/CppLibraryPluginTest.groovy
+
     @Rule
     TemporaryFolder testProjectDir = new TemporaryFolder()
 
