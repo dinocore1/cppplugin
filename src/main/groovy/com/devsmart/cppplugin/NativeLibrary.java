@@ -1,15 +1,13 @@
 package com.devsmart.cppplugin;
 
-import org.gradle.api.Named;
 import org.gradle.api.component.SoftwareComponent;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.FileTree;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.util.PatternSet;
-import org.gradle.language.cpp.internal.DefaultCppComponent;
-import org.gradle.language.nativeplatform.internal.DefaultNativeComponent;
 
 import javax.inject.Inject;
 import java.util.Arrays;
@@ -20,6 +18,7 @@ import java.util.concurrent.Callable;
 public class NativeLibrary implements SoftwareComponent {
 
     private final String name;
+    private final Property<String> baseName;
     private final ConfigurableFileCollection source;
     private final FileCollection cppSource;
     private final ConfigurableFileCollection publicHeaders;
@@ -28,6 +27,7 @@ public class NativeLibrary implements SoftwareComponent {
     @Inject
     public NativeLibrary(ProjectLayout layout, ObjectFactory objectFactory, String name) {
         this.name = name;
+        this.baseName = objectFactory.property(String.class);
         this.source = objectFactory.fileCollection();
         this.cppSource = createSourceView("src/" + name + "/cpp", Arrays.asList("cpp", "cc"));
         this.publicHeaders = objectFactory.fileCollection();
@@ -71,6 +71,22 @@ public class NativeLibrary implements SoftwareComponent {
     @Override
     public String getName() {
         return this.name;
+    }
+
+    public Property<String> getBaseName() {
+        return this.baseName;
+    }
+
+    public ConfigurableFileCollection getSource() {
+        return source;
+    }
+
+    public FileCollection getCppSource() {
+        return cppSource;
+    }
+
+    public FileCollection getPublicHeaderDirs() {
+        return this.publicHeadersWithConvention;
     }
 
     public FileTree getPublicHeaderFiles() {

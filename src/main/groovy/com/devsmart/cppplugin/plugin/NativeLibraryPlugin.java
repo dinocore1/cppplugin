@@ -21,6 +21,7 @@ public class NativeLibraryPlugin implements Plugin<Project> {
         NativeLibrary lib = project.getObjects().newInstance(com.devsmart.cppplugin.NativeLibrary.class, "main");
         project.getExtensions().add("library", lib);
         project.getComponents().add(lib);
+        lib.getBaseName().convention(project.getName());
 
 
         project.getComponents().withType(NativeBinary.class, binary -> {

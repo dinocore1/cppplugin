@@ -9,7 +9,8 @@ import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 class NativeLibraryFunctTest extends Specification {
 
-    @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
+    @Rule
+    TemporaryFolder testProjectDir = new TemporaryFolder()
     File buildFile
 
     def setup() {
