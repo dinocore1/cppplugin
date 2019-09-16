@@ -18,6 +18,7 @@ public class CompileTask extends DefaultTask {
     private final ConfigurableFileCollection includes;
     private final Property<ToolChain> toolChain;
     private final Map<String, String> macros = new LinkedHashMap<>();
+    private final Property<TargetCombo> targetCombo;
 
     public CompileTask() {
         ObjectFactory objectFactory = getProject().getObjects();
@@ -26,6 +27,7 @@ public class CompileTask extends DefaultTask {
         includes = objectFactory.fileCollection();
         dependsOn(includes);
         toolChain = objectFactory.property(ToolChain.class);
+        targetCombo = objectFactory.property(TargetCombo.class);
 
     }
 
@@ -51,5 +53,8 @@ public class CompileTask extends DefaultTask {
         return this.macros;
     }
 
-
+    @Input
+    public Property<TargetCombo> getTargetCombo() {
+        return this.targetCombo;
+    }
 }
