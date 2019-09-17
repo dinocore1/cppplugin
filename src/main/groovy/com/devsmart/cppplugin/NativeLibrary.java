@@ -7,6 +7,7 @@ import org.gradle.api.file.FileTree;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.SetProperty;
 import org.gradle.api.tasks.util.PatternSet;
 
 import javax.inject.Inject;

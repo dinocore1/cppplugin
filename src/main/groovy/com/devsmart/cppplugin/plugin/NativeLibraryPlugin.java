@@ -5,14 +5,20 @@ import com.devsmart.cppplugin.NativeLibrary;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.internal.operations.BuildOperationExecutor;
+import org.gradle.internal.work.WorkerLeaseService;
 
 import javax.inject.Inject;
 
 public class NativeLibraryPlugin implements Plugin<Project> {
 
-    @Inject
-    public NativeLibraryPlugin() {
+    private final BuildOperationExecutor buildExecutor;
+    private final WorkerLeaseService workerLease;
 
+    @Inject
+    public NativeLibraryPlugin(BuildOperationExecutor buildOperationExecutor, WorkerLeaseService workerLeaseService) {
+        this.buildExecutor = buildOperationExecutor;
+        this.workerLease = workerLeaseService;
     }
 
     @Override
@@ -24,7 +30,14 @@ public class NativeLibraryPlugin implements Plugin<Project> {
         lib.getBaseName().convention(project.getName());
 
 
+        //final BuildOperationExecutor buildOperationExecutor = serviceRegistry.get(BuildOperationExecutor.class);
+
+
         project.getComponents().withType(NativeBinary.class, binary -> {
+
+        });
+
+        project.afterEvaluate(p -> {
 
         });
 
