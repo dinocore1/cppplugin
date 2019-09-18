@@ -3,18 +3,13 @@ package com.devsmart.cppplugin;
 public abstract class AbstractCompiler implements Tool {
 
     boolean isCross;
-    MachineArchitecture machineArch;
-    Platform platform;
+    TargetCombo targetCombo;
 
     public boolean isCross() {
         return isCross;
     }
 
-    public MachineArchitecture getMachineArch() {
-        return machineArch;
-    }
-
-    public Platform getPlatform() {
-        return platform;
+    public TargetCombo getTargetCombo() {
+        return targetCombo;
     }
 }

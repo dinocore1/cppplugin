@@ -30,6 +30,7 @@ class NativeLibraryPluginTest extends Specification {
         def project = ProjectBuilder.builder()
                 .withProjectDir(testProjectDir.root)
                 .withName("testLib")
+                .withGradleUserHomeDir(new File("/home/paul/.gradle"))
                 .build()
 
 

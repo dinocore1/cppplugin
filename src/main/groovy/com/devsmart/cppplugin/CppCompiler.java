@@ -1,11 +1,6 @@
 package com.devsmart.cppplugin;
 
-public class CppCompiler extends AbstractCompiler {
-
-    @Override
-    public String getExecutablePath() {
-        return null;
-    }
+public abstract class CppCompiler extends AbstractCompiler {
 
     public enum Standard {
         CPP98,

@@ -6,6 +6,7 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.FileTree;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.SetProperty;
 import org.gradle.api.tasks.util.PatternSet;
@@ -24,6 +25,7 @@ public class NativeLibrary implements SoftwareComponent {
     private final FileCollection cppSource;
     private final ConfigurableFileCollection publicHeaders;
     private final FileCollection publicHeadersWithConvention;
+    private final ListProperty<CppCompiler> cppCompilers;
 
     @Inject
     public NativeLibrary(ProjectLayout layout, ObjectFactory objectFactory, String name) {
@@ -33,6 +35,7 @@ public class NativeLibrary implements SoftwareComponent {
         this.cppSource = createSourceView("src/" + name + "/cpp", Arrays.asList("cpp", "cc"));
         this.publicHeaders = objectFactory.fileCollection();
         this.publicHeadersWithConvention = createDirView(publicHeaders, "src/" + name + "/public");
+        this.cppCompilers = objectFactory.listProperty(CppCompiler.class);
     }
 
     protected FileCollection createSourceView(final String defaultLocation, List<String> sourceExtensions) {
@@ -94,5 +97,9 @@ public class NativeLibrary implements SoftwareComponent {
         PatternSet patterns = new PatternSet();
         patterns.include("**/*.h", "**/*.hpp");
         return this.publicHeadersWithConvention.getAsFileTree().matching(patterns);
+    }
+
+    public ListProperty<CppCompiler> getCppCompilers() {
+        return this.cppCompilers;
     }
 }

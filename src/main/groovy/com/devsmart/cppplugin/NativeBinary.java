@@ -4,5 +4,6 @@ import org.gradle.api.component.SoftwareComponent;
 
 public interface NativeBinary extends SoftwareComponent {
 
+    VariantIdentity getVariant();
 
 }
