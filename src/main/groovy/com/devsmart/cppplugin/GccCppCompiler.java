@@ -2,7 +2,7 @@ package com.devsmart.cppplugin;
 
 import org.gradle.workers.WorkAction;
 
-public class GCCCppCompiler extends CppCompiler {
+public class GccCppCompiler extends CppCompiler {
 
 
     @Override

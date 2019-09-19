@@ -19,9 +19,9 @@ public class Toolchains {
 
     }
 
-    public ToolChain gcc(Action<? super ToolChain> config) {
+    public void gcc(Action<? super ToolChain> config) {
         DefaultGccToolchain toolchain = objectFactory.newInstance(DefaultGccToolchain.class);
         config.execute(toolchain);
-        return toolchain;
+        components.add(toolchain);
     }
 }

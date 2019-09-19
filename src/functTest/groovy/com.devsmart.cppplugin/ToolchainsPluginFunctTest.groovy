@@ -30,6 +30,9 @@ class ToolchainsPluginFunctTest extends Specification {
             toolchains {
                 gcc {
                   platform 'linux', 'x86'
+                  cppCompiler {
+                    exePath '/usr/bin/c++'
+                  }
                 }
             }
         """

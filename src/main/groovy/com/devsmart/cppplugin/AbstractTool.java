@@ -8,4 +8,8 @@ public abstract class AbstractTool implements Tool {
     public String getExePath() {
         return exePath;
     }
+
+    public void exePath(String path) {
+        this.exePath = path;
+    }
 }
