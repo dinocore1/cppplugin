@@ -53,7 +53,7 @@ public class CompileTask extends DefaultTask {
         CppCompiler theCppCompiler = theToolchain.getCppCompiler();
         Platform thePlatform = getTargetPlatform();
         Set<File> theIncludes = includes.getFiles();
-        int hashCode = Objects.hash(thePlatform, theIncludes, macros, flags);
+        final int hashCode = Objects.hash(thePlatform, theIncludes, macros, flags);
         File theOutputDir = outputDir.getAsFile().get();
 
         WorkQueue queue = workerExecutor.noIsolation();
@@ -63,7 +63,8 @@ public class CompileTask extends DefaultTask {
 
             queue.submit(compileAction, params -> {
 
-                String outputFileName = String.format("%s_%d.o", f.getName(), hashCode);
+                int outputHash = 31 * hashCode + f.hashCode();
+                String outputFileName = String.format("%s_%d.o", f.getName(), outputHash);
 
                 params.getSrcFile().set(f);
                 params.getOutputFile().set(new File(theOutputDir, outputFileName));
