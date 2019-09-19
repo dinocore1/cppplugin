@@ -1,24 +1,23 @@
 package com.devsmart.cppplugin;
 
-import org.codehaus.groovy.runtime.StringGroovyMethods;
 import org.gradle.nativeplatform.Linkage;
 
 import java.util.Objects;
 
 public class VariantIdentity {
 
-    private final TargetCombo target;
+    private final Platform platform;
     private final boolean debuggable;
     private final Linkage linkage;
 
-    public VariantIdentity(TargetCombo target, boolean debuggable, Linkage linkage) {
-        this.target = target;
+    public VariantIdentity(Platform platform, boolean debuggable, Linkage linkage) {
+        this.platform = platform;
         this.debuggable = debuggable;
         this.linkage = linkage;
     }
 
-    public TargetCombo getTarget() {
-        return target;
+    public Platform getPlatform() {
+        return platform;
     }
 
     public boolean isDebuggable() {
@@ -31,7 +30,7 @@ public class VariantIdentity {
 
     @Override
     public int hashCode() {
-        return Objects.hash(target, debuggable, linkage);
+        return Objects.hash(platform, debuggable, linkage);
     }
 
     @Override
@@ -41,13 +40,13 @@ public class VariantIdentity {
         }
 
         VariantIdentity other = (VariantIdentity) obj;
-        return Objects.equals(target, other.target) &&
+        return Objects.equals(platform, other.platform) &&
                 Objects.equals(debuggable, other.debuggable) &&
                 Objects.equals(linkage, other.linkage);
     }
 
     @Override
     public String toString() {
-        return target.toString() + "_" + linkage.getName() + (debuggable ? "_debug" : "");
+        return platform.toString() + "_" + linkage.getName() + (debuggable ? "_debug" : "");
     }
 }

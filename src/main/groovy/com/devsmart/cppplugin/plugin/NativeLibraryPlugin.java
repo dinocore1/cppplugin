@@ -61,8 +61,8 @@ public class NativeLibraryPlugin implements Plugin<Project> {
 
     private void dimentions(Collection<CppCompiler> compilers, Action<VariantIdentity> action) {
         for(CppCompiler compiler : compilers) {
-            action.execute(new VariantIdentity(compiler.getTargetCombo(), true, Linkage.STATIC));
-            action.execute(new VariantIdentity(compiler.getTargetCombo(), true, Linkage.SHARED));
+            action.execute(new VariantIdentity(compiler.getTargetPlatform(), true, Linkage.STATIC));
+            action.execute(new VariantIdentity(compiler.getTargetPlatform(), true, Linkage.SHARED));
         }
     }
 
