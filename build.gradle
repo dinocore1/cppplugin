@@ -22,6 +22,11 @@ gradlePlugin {
             id = 'com.devsmart.native-library'
             implementationClass = 'com.devsmart.cppplugin.plugin.NativeLibraryPlugin'
         }
+
+        cppPlugin {
+            id = 'com.devsmart.toolchains'
+            implementationClass = 'com.devsmart.cppplugin.plugin.ToolchainsPlugin'
+        }
     }
 }
 

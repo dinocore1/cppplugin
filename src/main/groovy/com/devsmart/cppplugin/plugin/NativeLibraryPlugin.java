@@ -2,6 +2,7 @@ package com.devsmart.cppplugin.plugin;
 
 import com.devsmart.cppplugin.*;
 import org.gradle.api.Action;
+import org.gradle.api.NamedDomainObjectSet;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.internal.impldep.com.google.gson.Gson;
@@ -38,6 +39,7 @@ public class NativeLibraryPlugin implements Plugin<Project> {
         project.getExtensions().add("library", lib);
         project.getComponents().add(lib);
         lib.getBaseName().convention(project.getName());
+        lib.getCppStandard().convention(CppStandard.CPP98);
 
         loadCompilerDefs(lib, project);
 
@@ -49,22 +51,15 @@ public class NativeLibraryPlugin implements Plugin<Project> {
 
         });
 
-        project.afterEvaluate(p -> {
-
-            dimentions(lib.getCppCompilers().get(), id -> {
-                NativeBinary binary;
-            });
-
+        project.getComponents().withType(ToolChain.class, toolChain -> {
+            lib.getVariants().add(new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.STATIC));
+            lib.getVariants().add(new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.SHARED));
         });
 
+
     }
 
-    private void dimentions(Collection<CppCompiler> compilers, Action<VariantIdentity> action) {
-        for(CppCompiler compiler : compilers) {
-            action.execute(new VariantIdentity(compiler.getTargetPlatform(), true, Linkage.STATIC));
-            action.execute(new VariantIdentity(compiler.getTargetPlatform(), true, Linkage.SHARED));
-        }
-    }
+
 
     private static class CompilerDef {
         public String type;
@@ -86,8 +81,7 @@ public class NativeLibraryPlugin implements Plugin<Project> {
                     for(CompilerDef def : compilerDefs) {
                         LOGGER.info("compiler def {}", def);
 
-                        GCCCppCompiler compiler = new GCCCppCompiler(def.path);
-                        lib.getCppCompilers().add(compiler);
+                        //GCCCppCompiler compiler = new GCCCppCompiler(def.path);
 
 
 

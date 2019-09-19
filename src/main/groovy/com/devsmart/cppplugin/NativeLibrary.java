@@ -25,7 +25,8 @@ public class NativeLibrary implements SoftwareComponent {
     private final FileCollection cppSource;
     private final ConfigurableFileCollection publicHeaders;
     private final FileCollection publicHeadersWithConvention;
-    private final ListProperty<CppCompiler> cppCompilers;
+    private final Property<CppStandard> cppStandard;
+    private final SetProperty<VariantIdentity> variants;
 
     @Inject
     public NativeLibrary(ProjectLayout layout, ObjectFactory objectFactory, String name) {
@@ -35,7 +36,8 @@ public class NativeLibrary implements SoftwareComponent {
         this.cppSource = createSourceView("src/" + name + "/cpp", Arrays.asList("cpp", "cc"));
         this.publicHeaders = objectFactory.fileCollection();
         this.publicHeadersWithConvention = createDirView(publicHeaders, "src/" + name + "/public");
-        this.cppCompilers = objectFactory.listProperty(CppCompiler.class);
+        this.cppStandard = objectFactory.property(CppStandard.class);
+        this.variants = objectFactory.setProperty(VariantIdentity.class);
     }
 
     protected FileCollection createSourceView(final String defaultLocation, List<String> sourceExtensions) {
@@ -99,7 +101,11 @@ public class NativeLibrary implements SoftwareComponent {
         return this.publicHeadersWithConvention.getAsFileTree().matching(patterns);
     }
 
-    public ListProperty<CppCompiler> getCppCompilers() {
-        return this.cppCompilers;
+    public Property<CppStandard> getCppStandard() {
+        return this.cppStandard;
+    }
+
+    public SetProperty<VariantIdentity> getVariants() {
+        return variants;
     }
 }

@@ -2,5 +2,5 @@ package com.devsmart.cppplugin;
 
 public interface Tool {
 
-    String getExecutablePath();
+    String getExePath();
 }

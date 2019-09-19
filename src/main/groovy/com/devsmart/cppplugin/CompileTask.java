@@ -13,7 +13,8 @@ import java.util.Map;
 
 public class CompileTask extends DefaultTask {
 
-    //See AbstractNativeCompileTask, AbstractCompiler<T extends BinaryToolSpec>, BuildOperationExecutor, NativeCompiler<T extends NativeCompileSpec>::newInvocationAction
+    // See https://docs.gradle.org/current/userguide/custom_tasks.html#worker_api
+    //See AbstractNativeCompileTask, AbstractTool<T extends BinaryToolSpec>, BuildOperationExecutor, NativeCompiler<T extends NativeCompileSpec>::newInvocationAction
 
     private final ConfigurableFileCollection source;
     private final ConfigurableFileCollection includes;
