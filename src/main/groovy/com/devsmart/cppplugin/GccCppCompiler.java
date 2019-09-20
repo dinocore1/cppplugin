@@ -7,6 +7,17 @@ public class GccCppCompiler extends CppCompiler {
 
     @Override
     public Class<? extends WorkAction<CppCompileParameters>> getCompileActionClass() {
-        return null;
+        return GccCompileWorkAction.class;
+    }
+
+    private abstract class GccCompileWorkAction implements WorkAction<CppCompileParameters> {
+
+        @Override
+        public void execute() {
+            CppCompileParameters params = getParameters();
+
+
+
+        }
     }
 }

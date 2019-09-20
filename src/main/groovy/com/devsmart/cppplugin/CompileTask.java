@@ -76,6 +76,8 @@ public class CompileTask extends DefaultTask {
 
         });
 
+        queue.await();
+
     }
 
     @Internal
