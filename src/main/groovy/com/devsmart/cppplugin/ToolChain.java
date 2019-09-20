@@ -9,4 +9,6 @@ public interface ToolChain extends SoftwareComponent {
 
     CppCompiler getCppCompiler();
 
+    String getObjectFileExtention();
+
 }

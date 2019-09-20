@@ -18,12 +18,12 @@ repositories {
 
 gradlePlugin {
     plugins {
-        cppPlugin {
+        cppLibraryPlugin {
             id = 'com.devsmart.native-library'
             implementationClass = 'com.devsmart.cppplugin.plugin.NativeLibraryPlugin'
         }
 
-        cppPlugin {
+        toolchainsPlugin {
             id = 'com.devsmart.toolchains'
             implementationClass = 'com.devsmart.cppplugin.plugin.ToolchainsPlugin'
         }
@@ -33,8 +33,10 @@ gradlePlugin {
 dependencies {
     implementation gradleApi()
     implementation localGroovy()
+    implementation 'org.apache.commons:commons-lang3:3.0'
     //compile 'org.codehaus.groovy:groovy-all:2.3.11'
     testImplementation 'junit:junit:4.12'
+
     testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
         exclude group: 'org.codehaus.groovy'
     }

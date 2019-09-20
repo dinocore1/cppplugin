@@ -7,7 +7,7 @@ import spock.lang.Specification
 
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
-class NativeLibraryFunctTest extends Specification {
+class NativeLibraryModelFunctTest extends Specification {
 
     @Rule
     TemporaryFolder testProjectDir = new TemporaryFolder()
@@ -17,15 +17,26 @@ class NativeLibraryFunctTest extends Specification {
         buildFile = testProjectDir.newFile('build.gradle')
         buildFile << """
             plugins {
-                id 'com.devsmart.native-library'
+                id 'com.devsmart.toolchains' 
+                id 'com.devsmart.native-library' 
+            }
+            
+            toolchains {
+                gcc {
+                  platform 'linux', 'x86'
+                  cppCompiler {
+                    exePath '/usr/bin/c++'
+                  }
+                }
             }
         """
     }
 
-    def "library module source files found under src_main_cpp"() {
+    def "assemble task runs"() {
 
         buildFile << """
             library {
+              cppStandard 'c++11'
             }
         """
 
@@ -34,26 +45,23 @@ class NativeLibraryFunctTest extends Specification {
         srcFile << """
             #include <iostream>
             
-            int main() {
+            void sayhello() {
               std::cout << "hello world" << std::endl;
-              return 0;
             }
         """
 
         when:
         def result = GradleRunner.create()
             .withProjectDir(testProjectDir.root)
-            .withArguments('tasks')
             .withPluginClasspath()
+            .withArguments('assemble')
             .withDebug(true)
             .build()
 
         then:
-        result.task(":tasks").outcome == SUCCESS
+        result.task(":assemble").outcome == SUCCESS
 
     }
 
-    def "library module header files found under src_main_public"() {
 
-    }
 }

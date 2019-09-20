@@ -2,13 +2,16 @@ package com.devsmart.cppplugin.plugin;
 
 import com.devsmart.cppplugin.*;
 import org.gradle.api.Action;
-import org.gradle.api.NamedDomainObjectSet;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.file.ProjectLayout;
+import org.gradle.api.model.ObjectFactory;
 import org.gradle.internal.impldep.com.google.gson.Gson;
 import org.gradle.internal.impldep.com.google.gson.GsonBuilder;
 import org.gradle.internal.operations.BuildOperationExecutor;
 import org.gradle.internal.work.WorkerLeaseService;
+import org.gradle.language.base.plugins.LifecycleBasePlugin;
 import org.gradle.nativeplatform.Linkage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.Iterator;
 
 public class NativeLibraryPlugin implements Plugin<Project> {
 
@@ -34,26 +37,50 @@ public class NativeLibraryPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
-
-        NativeLibrary lib = project.getObjects().newInstance(com.devsmart.cppplugin.NativeLibrary.class, "main");
+        project.getPluginManager().apply(LifecycleBasePlugin.class);
+        ObjectFactory objectFactory = project.getObjects();
+        ProjectLayout projectLayout = project.getLayout();
+        NativeLibraryModel lib = objectFactory.newInstance(NativeLibraryModel.class, "main");
         project.getExtensions().add("library", lib);
         project.getComponents().add(lib);
         lib.getBaseName().convention(project.getName());
-        lib.getCppStandard().convention(CppStandard.CPP98);
-
-        loadCompilerDefs(lib, project);
 
 
         //final BuildOperationExecutor buildOperationExecutor = serviceRegistry.get(BuildOperationExecutor.class);
 
 
-        project.getComponents().withType(NativeBinary.class, binary -> {
+        project.getComponents().withType(CppNativeBinary.class, binary -> {
+
+            Iterator<Configuration> it = project.getConfigurations().iterator();
+            while(it.hasNext()) {
+                Configuration config = it.next();
+            }
 
         });
 
         project.getComponents().withType(ToolChain.class, toolChain -> {
-            lib.getVariants().add(new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.STATIC));
-            lib.getVariants().add(new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.SHARED));
+
+
+            VariantIdentity id = new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.STATIC);
+            DefaultCppNativeBinary cppBinary = objectFactory.newInstance(DefaultCppNativeBinary.class, lib, id);
+            project.getComponents().add(cppBinary);
+
+            String compileTaskName = Names.of(id).getTaskName("compile");
+            cppBinary.getCompileTask().set(project.getTasks().register(compileTaskName, CompileTask.class, task -> {
+                task.getSource().setFrom(lib.getCppSource());
+                task.getIncludes().setFrom(lib.getIncludeDirs());
+                task.getOutputDir().set(projectLayout.getBuildDirectory().dir("obj"));
+                task.getToolChain().set(toolChain);
+                task.getCppStandard().set(lib.getCppStandard());
+            }));
+
+            project.getTasks().named("assemble", task -> {
+                task.dependsOn(cppBinary.getCompileTask());
+            });
+
+
+            //lib.getVariants().add(new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.STATIC));
+            //lib.getVariants().add(new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.SHARED));
         });
 
 
@@ -67,7 +94,7 @@ public class NativeLibraryPlugin implements Plugin<Project> {
         public String targetCombo;
     }
 
-    private void loadCompilerDefs(NativeLibrary lib, Project project) {
+    private void loadCompilerDefs(NativeLibraryModel lib, Project project) {
 
 
         //if(project.hasProperty(COMPILER_DEF_FILE_PROPERTY)) {

@@ -31,6 +31,7 @@ public class CompileTask extends DefaultTask {
     private final Map<String, String> macros = new LinkedHashMap<>();
     private final Set<String> flags = new LinkedHashSet<>();
     private final DirectoryProperty outputDir;
+    private final Property<CppStandard> cppStandard;
 
 
     @Inject
@@ -42,6 +43,7 @@ public class CompileTask extends DefaultTask {
         dependsOn(includes);
         toolChain = objectFactory.property(ToolChain.class);
         outputDir = objectFactory.directoryProperty();
+        cppStandard = objectFactory.property(CppStandard.class);
 
     }
 
@@ -50,6 +52,7 @@ public class CompileTask extends DefaultTask {
 
 
         ToolChain theToolchain = toolChain.get();
+        final String objFileExt = theToolchain.getObjectFileExtention();
         CppCompiler theCppCompiler = theToolchain.getCppCompiler();
         Platform thePlatform = getTargetPlatform();
         Set<File> theIncludes = includes.getFiles();
@@ -63,14 +66,18 @@ public class CompileTask extends DefaultTask {
 
             queue.submit(compileAction, params -> {
 
+                params.getExePath().set(theCppCompiler.getExePath());
+
                 int outputHash = 31 * hashCode + f.hashCode();
-                String outputFileName = String.format("%s_%d.o", f.getName(), outputHash);
+                String hexStr = Integer.toHexString(outputHash);
+                String outputFileName = String.format("%s_%s.%s", f.getName(), hexStr, objFileExt);
 
                 params.getSrcFile().set(f);
                 params.getOutputFile().set(new File(theOutputDir, outputFileName));
                 params.getIncludeDirs().set(includes);
                 params.getMacros().set(macros);
                 params.getFlags().set(flags);
+                params.getCppStandard().set(cppStandard);
             });
 
 
@@ -81,7 +88,7 @@ public class CompileTask extends DefaultTask {
     }
 
     @Internal
-    Property<ToolChain> getToolChain() {
+    public Property<ToolChain> getToolChain() {
         return this.toolChain;
     }
 
@@ -90,6 +97,12 @@ public class CompileTask extends DefaultTask {
     @PathSensitive(PathSensitivity.RELATIVE)
     public ConfigurableFileCollection getSource() {
         return this.source;
+    }
+
+    @InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
+    public ConfigurableFileCollection getIncludes() {
+        return this.includes;
     }
 
     @Input
@@ -110,5 +123,10 @@ public class CompileTask extends DefaultTask {
     @OutputDirectory
     public DirectoryProperty getOutputDir() {
         return this.outputDir;
+    }
+
+    @Input
+    public Property<CppStandard> getCppStandard() {
+        return cppStandard;
     }
 }

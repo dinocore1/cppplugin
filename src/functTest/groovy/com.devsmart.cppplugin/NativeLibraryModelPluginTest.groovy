@@ -6,7 +6,7 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
-class NativeLibraryPluginTest extends Specification {
+class NativeLibraryModelPluginTest extends Specification {
 
     //see: https://github.com/gradle/gradle/blob/master/subprojects/language-native/src/test/groovy/org/gradle/language/cpp/plugins/CppLibraryPluginTest.groovy
 
@@ -38,7 +38,7 @@ class NativeLibraryPluginTest extends Specification {
         project.pluginManager.apply(NativeLibraryPlugin)
 
         then:
-        project.library instanceof NativeLibrary
+        project.library instanceof NativeLibraryModel
         project.library.baseName.get() == "testLib"
         project.library.cppSource.files == [srcFile] as Set
         project.library.publicHeaderDirs.files == [publicHeaders] as Set

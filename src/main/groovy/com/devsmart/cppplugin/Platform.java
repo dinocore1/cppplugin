@@ -2,7 +2,12 @@ package com.devsmart.cppplugin;
 
 import org.gradle.api.Named;
 import org.gradle.api.attributes.Attribute;
+import org.gradle.api.tasks.Input;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Objects;
 
 public class Platform implements Named {
@@ -51,8 +56,11 @@ public class Platform implements Named {
         return getName();
     }
 
+    @Input
     @Override
     public String getName() {
         return String.format("%s_%s", operatingSystem.getName(), machineArchitecture.getName());
     }
+
+
 }
