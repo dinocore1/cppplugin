@@ -6,6 +6,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.ProjectLayout;
+import org.gradle.api.file.RelativePath;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.internal.impldep.com.google.gson.Gson;
 import org.gradle.internal.impldep.com.google.gson.GsonBuilder;
@@ -20,6 +21,8 @@ import javax.inject.Inject;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 public class NativeLibraryPlugin implements Plugin<Project> {
 
@@ -65,11 +68,16 @@ public class NativeLibraryPlugin implements Plugin<Project> {
             DefaultCppNativeBinary cppBinary = objectFactory.newInstance(DefaultCppNativeBinary.class, lib, id);
             project.getComponents().add(cppBinary);
 
-            String compileTaskName = Names.of(id).getTaskName("compile");
+            Names names = Names.of(id);
+            RelativePath outputDir = new RelativePath(false, "obj",
+                    id.getPlatform().getOperatingSystem().getName().toLowerCase(),
+                    id.getPlatform().getMachineArchitecture().getName().toLowerCase());
+
+            String compileTaskName = names.getTaskName("compile");
             cppBinary.getCompileTask().set(project.getTasks().register(compileTaskName, CompileTask.class, task -> {
                 task.getSource().setFrom(lib.getCppSource());
                 task.getIncludes().setFrom(lib.getIncludeDirs());
-                task.getOutputDir().set(projectLayout.getBuildDirectory().dir("obj"));
+                task.getOutputDir().set(projectLayout.getBuildDirectory().dir(outputDir.getPathString()));
                 task.getToolChain().set(toolChain);
                 task.getCppStandard().set(lib.getCppStandard());
             }));
