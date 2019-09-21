@@ -1,7 +1,6 @@
 package com.devsmart.cppplugin.plugin;
 
 import com.devsmart.cppplugin.*;
-import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -21,8 +20,6 @@ import javax.inject.Inject;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 public class NativeLibraryPlugin implements Plugin<Project> {
 
@@ -63,35 +60,30 @@ public class NativeLibraryPlugin implements Plugin<Project> {
 
         project.getComponents().withType(ToolChain.class, toolChain -> {
 
-
             VariantIdentity id = new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.STATIC);
-            DefaultCppNativeBinary cppBinary = objectFactory.newInstance(DefaultCppNativeBinary.class, lib, id);
-            project.getComponents().add(cppBinary);
+            addTasksForVariant(id, project, lib, toolChain);
 
-            Names names = Names.of(id);
-            RelativePath outputDir = new RelativePath(false, "obj",
-                    id.getPlatform().getOperatingSystem().getName().toLowerCase(),
-                    id.getPlatform().getMachineArchitecture().getName().toLowerCase());
+            id = new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.SHARED);
+            addTasksForVariant(id, project, lib, toolChain);
 
-            String compileTaskName = names.getTaskName("compile");
-            cppBinary.getCompileTask().set(project.getTasks().register(compileTaskName, CompileTask.class, task -> {
-                task.getSource().setFrom(lib.getCppSource());
-                task.getIncludes().setFrom(lib.getIncludeDirs());
-                task.getOutputDir().set(projectLayout.getBuildDirectory().dir(outputDir.getPathString()));
-                task.getToolChain().set(toolChain);
-                task.getCppStandard().set(lib.getCppStandard());
-            }));
-
-            project.getTasks().named("assemble", task -> {
-                task.dependsOn(cppBinary.getCompileTask());
-            });
-
-
-            //lib.getVariants().add(new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.STATIC));
-            //lib.getVariants().add(new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.SHARED));
         });
 
 
+    }
+
+    private void addTasksForVariant(VariantIdentity id, Project project, NativeLibraryModel lib, ToolChain toolChain) {
+        ObjectFactory objectFactory = project.getObjects();
+        DefaultCppNativeBinary cppBinary = objectFactory.newInstance(DefaultCppNativeBinary.class, lib, id);
+        project.getComponents().add(cppBinary);
+
+        String compileTaskName = Names.of(id).getTaskName("compile");
+        cppBinary.getCompileTask().set(project.getTasks().register(compileTaskName, CppCompileTask.class, task -> {
+            task.from(lib, id, toolChain);
+        }));
+
+        project.getTasks().named("assemble", task -> {
+            task.dependsOn(cppBinary.getCompileTask());
+        });
     }
 
 

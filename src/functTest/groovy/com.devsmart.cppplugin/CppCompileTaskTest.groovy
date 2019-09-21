@@ -5,7 +5,7 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
-class CompileTaskTest extends Specification {
+class CppCompileTaskTest extends Specification {
 
     @Rule
     TemporaryFolder testProjectDir = new TemporaryFolder()
@@ -36,7 +36,7 @@ class CompileTaskTest extends Specification {
         }
 
 
-        CompileTask compileTask = project.task('compile', type: CompileTask) {
+        CppCompileTask compileTask = project.task('compile', type: CppCompileTask) {
             source.from(mainSrcDir)
             toolChain = gcctoolChain
             outputDir = project.layout.buildDirectory.dir('obj')
