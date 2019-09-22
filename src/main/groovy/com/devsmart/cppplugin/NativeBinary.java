@@ -10,5 +10,6 @@ public interface NativeBinary extends SoftwareComponent {
     VariantIdentity getVariant();
     VersionNumber getVersion();
     Property<Task> getCompileTask();
+    Property<Task> getLinkTask();
 
 }

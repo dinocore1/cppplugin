@@ -23,9 +23,13 @@ class NativeLibraryModelFunctTest extends Specification {
             
             toolchains {
                 gcc {
-                  platform 'linux', 'x86'
+                  platform 'linux', 'x86_64'
                   cppCompiler {
                     exePath '/usr/bin/c++'
+                  }
+                  
+                  archiveTool {
+                    exePath '/usr/bin/ar'
                   }
                 }
             }

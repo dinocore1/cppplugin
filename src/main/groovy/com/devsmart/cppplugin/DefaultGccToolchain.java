@@ -9,12 +9,14 @@ public class DefaultGccToolchain implements ToolChain {
 
     private final ObjectFactory objectFactory;
     private final GccCppCompiler cppCompiler;
+    private final GccArchiverTool archiveTool;
     private Platform platform;
 
     @Inject
     public DefaultGccToolchain(ObjectFactory objectFactory) {
         this.objectFactory = objectFactory;
         this.cppCompiler = new GccCppCompiler();
+        this.archiveTool = new GccArchiverTool();
 
     }
 
@@ -26,6 +28,11 @@ public class DefaultGccToolchain implements ToolChain {
     @Override
     public CppCompiler getCppCompiler() {
         return this.cppCompiler;
+    }
+
+    @Override
+    public ArchiverTool getArchiveTool() {
+        return this.archiveTool;
     }
 
     @Override
@@ -44,6 +51,10 @@ public class DefaultGccToolchain implements ToolChain {
 
     public void cppCompiler(Action<? super CppCompiler> config) {
         config.execute(cppCompiler);
+    }
+
+    public void archiveTool(Action<? super ArchiverTool> config) {
+        config.execute(archiveTool);
     }
 
 

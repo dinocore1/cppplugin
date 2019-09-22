@@ -4,6 +4,7 @@ import org.gradle.api.Task;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.TaskProvider;
 import org.gradle.util.VersionNumber;
 
 import javax.inject.Inject;
@@ -13,6 +14,7 @@ public class DefaultCppNativeBinary implements CppNativeBinary {
     private final NativeLibraryModel libraryModel;
     private final VariantIdentity variant;
     private final Property<Task> compileTask;
+    private final Property<Task> linkTask;
 
 
     @Inject
@@ -20,6 +22,7 @@ public class DefaultCppNativeBinary implements CppNativeBinary {
         this.libraryModel = libraryModel;
         this.variant = variantIdentity;
         this.compileTask = objectFactory.property(Task.class);
+        this.linkTask = objectFactory.property(Task.class);
     }
 
     @Override
@@ -41,6 +44,11 @@ public class DefaultCppNativeBinary implements CppNativeBinary {
     @Override
     public Property<Task> getCompileTask() {
         return this.compileTask;
+    }
+
+    @Override
+    public Property<Task> getLinkTask() {
+        return this.linkTask;
     }
 
     @Override

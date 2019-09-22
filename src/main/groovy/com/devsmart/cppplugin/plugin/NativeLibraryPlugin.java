@@ -7,8 +7,6 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.file.RelativePath;
 import org.gradle.api.model.ObjectFactory;
-import org.gradle.internal.impldep.com.google.gson.Gson;
-import org.gradle.internal.impldep.com.google.gson.GsonBuilder;
 import org.gradle.internal.operations.BuildOperationExecutor;
 import org.gradle.internal.work.WorkerLeaseService;
 import org.gradle.language.base.plugins.LifecycleBasePlugin;
@@ -17,8 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.Iterator;
 
 public class NativeLibraryPlugin implements Plugin<Project> {
@@ -76,51 +72,50 @@ public class NativeLibraryPlugin implements Plugin<Project> {
         DefaultCppNativeBinary cppBinary = objectFactory.newInstance(DefaultCppNativeBinary.class, lib, id);
         project.getComponents().add(cppBinary);
 
-        String compileTaskName = Names.of(id).getTaskName("compile");
+        Names names = Names.of(id);
+        String compileTaskName = names.getTaskName("compile");
         cppBinary.getCompileTask().set(project.getTasks().register(compileTaskName, CppCompileTask.class, task -> {
             task.from(lib, id, toolChain);
         }));
 
+        String linkTaskName = names.getTaskName("link");
+        switch (id.getLinkage()) {
+            case SHARED:
+                cppBinary.getLinkTask().set(project.getTasks().register(linkTaskName, LinkTask.class, task -> {
+                    task.getExePath().set(toolChain.getCppCompiler().getExePath());
+                    task.getObjectFiles().setFrom(cppBinary.getCompileTask());
+                    task.getFlags().add("-shared");
+
+                    RelativePath outputFile = new RelativePath(true, "binary",
+                            id.getPlatform().getOperatingSystem().getName().toLowerCase(),
+                            id.getPlatform().getMachineArchitecture().getName().toLowerCase(),
+                            id.getLinkage().getName().toLowerCase(),
+                            String.format("%s.so", lib.getBaseName().get())
+                    );
+                    task.getOutputFile().set(project.getLayout().getBuildDirectory().file(outputFile.getPathString()));
+                }));
+                break;
+
+            case STATIC:
+                cppBinary.getLinkTask().set(project.getTasks().register(linkTaskName, ArchiveTask.class, task -> {
+                    task.getExePath().set(toolChain.getArchiveTool().getExePath());
+                    task.getObjectFiles().setFrom(cppBinary.getCompileTask());
+
+                    RelativePath outputFile = new RelativePath(true, "binary",
+                            id.getPlatform().getOperatingSystem().getName().toLowerCase(),
+                            id.getPlatform().getMachineArchitecture().getName().toLowerCase(),
+                            id.getLinkage().getName().toLowerCase(),
+                            String.format("%s.a", lib.getBaseName().get())
+                    );
+
+                    task.getOutputFile().set(project.getLayout().getBuildDirectory().file(outputFile.getPathString()));
+                }));
+                break;
+        }
+
         project.getTasks().named("assemble", task -> {
-            task.dependsOn(cppBinary.getCompileTask());
+            task.dependsOn(cppBinary.getLinkTask());
         });
     }
 
-
-
-    private static class CompilerDef {
-        public String type;
-        public String path;
-        public String targetCombo;
-    }
-
-    private void loadCompilerDefs(NativeLibraryModel lib, Project project) {
-
-
-        //if(project.hasProperty(COMPILER_DEF_FILE_PROPERTY)) {
-            //Object compilerdeffile = project.property(COMPILER_DEF_FILE_PROPERTY);
-            Object compilerdeffile = "/home/paul/compilerdef.json";
-            if(compilerdeffile != null && compilerdeffile instanceof String) {
-                Gson gson = new GsonBuilder().create();
-                try {
-                    FileReader reader = new FileReader((String) compilerdeffile);
-                    CompilerDef[] compilerDefs = gson.fromJson(reader, CompilerDef[].class);
-                    for(CompilerDef def : compilerDefs) {
-                        LOGGER.info("compiler def {}", def);
-
-                        //GCCCppCompiler compiler = new GCCCppCompiler(def.path);
-
-
-
-                    }
-
-                } catch (IOException e) {
-                    LOGGER.error("", e);
-                }
-            }
-        //}
-
-
-
-    }
 }
