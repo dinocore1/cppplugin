@@ -33,6 +33,7 @@ gradlePlugin {
 dependencies {
     implementation gradleApi()
     implementation localGroovy()
+    implementation 'com.google.guava:guava:27.1-jre'
     implementation 'org.apache.commons:commons-lang3:3.0'
     //compile 'org.codehaus.groovy:groovy-all:2.3.11'
     testImplementation 'junit:junit:4.12'

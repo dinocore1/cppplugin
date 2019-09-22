@@ -1,6 +1,14 @@
 package com.devsmart.cppplugin;
 
-public interface Tool {
+import org.gradle.api.tasks.WorkResult;
 
-    String getExePath();
+import java.io.File;
+
+public interface Tool<T extends ToolSpec> {
+
+    File getExe();
+    void exe(String exeFilePath);
+    void exe(File exeFilePath);
+
+    WorkResult execute(T spec);
 }

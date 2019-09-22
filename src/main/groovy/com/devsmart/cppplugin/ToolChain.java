@@ -7,9 +7,9 @@ public interface ToolChain extends SoftwareComponent {
 
     Platform getTargetPlatform();
 
-    CppCompiler getCppCompiler();
+    Tool<CppCompileSpec> getCppCompiler();
 
-    ArchiverTool getArchiveTool();
+    Tool<StaticLibraryArchiverSpec> getArchiveTool();
 
     String getObjectFileExtention();
 
