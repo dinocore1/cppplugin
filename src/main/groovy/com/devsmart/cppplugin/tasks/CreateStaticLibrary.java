@@ -58,7 +58,7 @@ public class CreateStaticLibrary extends DefaultTask {
     }
 
     @TaskAction
-    protected void link() {
+    public void link() {
 
         StaticLibraryArchiverSpec spec = new DefaultStaticLibraryArchiverSpec();
         spec.getObjectFiles().addAll(source.getFiles());
