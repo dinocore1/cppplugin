@@ -55,6 +55,7 @@ public class CppCompileTask extends AbstractCompileTask {
     @TaskAction
     public void compile(InputChanges inputs) {
 
+        /*
         WorkerExecutor workerExecutor = getWorkerExecutor();
 
         ToolChain theToolchain = toolChain.get();
@@ -82,6 +83,7 @@ public class CppCompileTask extends AbstractCompileTask {
         });
 
         queue.await();
+         */
 
     }
 

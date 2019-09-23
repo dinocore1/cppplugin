@@ -68,6 +68,7 @@ public class NativeLibraryPlugin implements Plugin<Project> {
     }
 
     private void addTasksForVariant(VariantIdentity id, Project project, NativeLibraryModel lib, ToolChain toolChain) {
+        /*
         ObjectFactory objectFactory = project.getObjects();
         DefaultCppNativeBinary cppBinary = objectFactory.newInstance(DefaultCppNativeBinary.class, lib, id);
         project.getComponents().add(cppBinary);
@@ -116,6 +117,7 @@ public class NativeLibraryPlugin implements Plugin<Project> {
         project.getTasks().named("assemble", task -> {
             task.dependsOn(cppBinary.getLinkTask());
         });
+         */
     }
 
 }

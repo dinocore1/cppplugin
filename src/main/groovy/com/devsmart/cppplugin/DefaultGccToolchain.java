@@ -2,6 +2,7 @@ package com.devsmart.cppplugin;
 
 import com.devsmart.cppplugin.cmdline.CommandLineToolInvocation;
 import com.devsmart.cppplugin.cmdline.CommandLineToolInvocationWorker;
+import com.devsmart.cppplugin.cmdline.DefaultCommandLineToolInvocationWorker;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.model.ObjectFactory;
@@ -24,13 +25,10 @@ public class DefaultGccToolchain implements ToolChain {
     private Platform platform;
 
     @Inject
-    public DefaultGccToolchain(ObjectFactory objectFactory, ExecActionFactory execActionFactory) {
+    public DefaultGccToolchain(ObjectFactory objectFactory, BuildOperationExecutor executor, ExecActionFactory execActionFactory, WorkerLeaseService workerLeaseService) {
         this.objectFactory = objectFactory;
-
-
-        this.cppCompiler = new CppCompiler();
-        this.archiveTool = new ArStaticLibraryArchiver();
-
+        this.cppCompiler = new CppCompiler(executor, new DefaultCommandLineToolInvocationWorker("c++", execActionFactory), workerLeaseService);
+        this.archiveTool = new ArStaticLibraryArchiver(executor, new DefaultCommandLineToolInvocationWorker("ar", execActionFactory), workerLeaseService);
     }
 
     @Override
@@ -66,7 +64,7 @@ public class DefaultGccToolchain implements ToolChain {
         config.execute(cppCompiler);
     }
 
-    public void archiveTool(Action<? super ArchiverTool> config) {
+    public void archiveTool(Action<? super ArStaticLibraryArchiver> config) {
         config.execute(archiveTool);
     }
 

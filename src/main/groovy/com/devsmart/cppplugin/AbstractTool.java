@@ -14,7 +14,7 @@ import org.gradle.internal.work.WorkerLeaseService;
 import java.io.File;
 import java.util.List;
 
-public abstract class AbstractTool<T> implements Tool<T> {
+public abstract class AbstractTool<T extends ToolSpec> implements Tool<T> {
 
     private File exe;
     private final BuildOperationExecutor buildOperationExecutor;
