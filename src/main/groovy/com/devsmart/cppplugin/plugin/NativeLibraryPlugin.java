@@ -33,7 +33,7 @@ public class NativeLibraryPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
-        project.getPluginManager().apply(LifecycleBasePlugin.class);
+        project.getPluginManager().apply(NativeBasePlugin.class);
         ObjectFactory objectFactory = project.getObjects();
         ProjectLayout projectLayout = project.getLayout();
         NativeLibraryModel lib = objectFactory.newInstance(NativeLibraryModel.class, "main");

@@ -7,8 +7,7 @@ import spock.lang.Specification
 
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
-class NativeLibraryModelFunctTest extends Specification {
-
+class NativeBasePluginFunctTest extends Specification {
     @Rule
     TemporaryFolder testProjectDir = new TemporaryFolder()
     File buildFile
@@ -36,11 +35,28 @@ class NativeLibraryModelFunctTest extends Specification {
         """
     }
 
-    def "assemble task runs"() {
+    def "dependencies resolve"() {
 
         buildFile << """
             library {
               cppStandard 'c++11'
+            }
+            
+            repositories {
+                maven {
+                    url 'https://artifactory.videray.com/artifactory/native-libs'
+                    if (project.hasProperty("gartifactoryUsername") 
+                        && project.hasProperty("gartifactoryPassword")) {
+                        credentials {
+                            username = gartifactoryUsername
+                            password = gartifactoryPassword
+                        }
+                    }
+                }
+            }
+        
+            dependencies {
+                implementation 'com.videray:core:1.0.2-SNAPSHOT'
             }
         """
 
@@ -56,16 +72,14 @@ class NativeLibraryModelFunctTest extends Specification {
 
         when:
         def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withPluginClasspath()
-            .withArguments('assemble')
-            .withDebug(true)
-            .build()
+                .withProjectDir(testProjectDir.root)
+                .withPluginClasspath()
+                .withArguments('assemble')
+                .withDebug(true)
+                .build()
 
         then:
         result.task(":assemble").outcome == SUCCESS
 
     }
-
-
 }
