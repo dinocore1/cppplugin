@@ -1,6 +1,7 @@
 package com.devsmart.cppplugin.plugin;
 
-import com.devsmart.cppplugin.components.ConfigurableComponentWithLinkUsage;
+import com.devsmart.cppplugin.Names;
+import com.devsmart.cppplugin.components.NativeComponentWithLinkUsage;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -13,7 +14,6 @@ import org.gradle.api.internal.artifacts.transform.UnzipTransform;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.internal.Cast;
 import org.gradle.language.base.plugins.LifecycleBasePlugin;
-import org.gradle.language.nativeplatform.internal.Names;
 import org.gradle.nativeplatform.Linkage;
 
 import static org.gradle.api.artifacts.type.ArtifactTypeDefinition.DIRECTORY_TYPE;
@@ -63,10 +63,9 @@ public class NativeBasePlugin implements Plugin<Project> {
     }
 
     private void addOutgoingConfigurationForLinkUsage(SoftwareComponentContainer components, final ConfigurationContainer configurations) {
-        components.withType(ConfigurableComponentWithLinkUsage.class, component -> {
-            //Names names = component.getNames();
-            //Configuration linkElements = configurations.create(names.withSuffix("linkElements"));
-            Configuration linkElements = configurations.create("mainLinkElements");
+        components.withType(NativeComponentWithLinkUsage.class, component -> {
+            Names names = component.getNames();
+            Configuration linkElements = configurations.create(names.withSuffix("linkElements"));
             linkElements.extendsFrom(component.getImplementationDependencies());
             linkElements.setCanBeResolved(false);
             AttributeContainer attributes = component.getLinkAttributes();

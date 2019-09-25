@@ -6,16 +6,18 @@ import org.gradle.api.component.SoftwareComponent;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
+import org.gradle.nativeplatform.Linkage;
 
-public interface ConfigurableComponentWithLinkUsage extends SoftwareComponent {
+
+public interface NativeComponentWithLinkUsage extends ComponentWithNames, SoftwareComponent {
 
     Configuration getImplementationDependencies();
+
+    Linkage getLinkage();
 
     Property<Configuration> getLinkElements();
 
     Provider<RegularFile> getLinkFile();
 
     AttributeContainer getLinkAttributes();
-
-
 }

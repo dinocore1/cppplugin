@@ -31,6 +31,7 @@ public class CppCompileTask extends AbstractCompileTask {
 
 
     public void from(NativeLibraryModel lib, VariantIdentity variant, ToolChain toolChain) {
+        /*
         this.variant = variant;
         getSource().setFrom(lib.getCppSource());
         getIncludes().setFrom(lib.getIncludeDirs());
@@ -50,6 +51,7 @@ public class CppCompileTask extends AbstractCompileTask {
         if(variant.isDebuggable()) {
             getFlags().add("-g");
         }
+         */
     }
 
     @TaskAction

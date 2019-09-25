@@ -14,7 +14,6 @@ public class Names {
     }
 
     public static Names of(VariantIdentity variant) {
-
         Platform platform = variant.getPlatform();
         String[] names = new String[]{
                 platform.getOperatingSystem().getName(),
@@ -24,6 +23,10 @@ public class Names {
             };
 
         return new Names(names);
+    }
+
+    public static Names of(NativeLibraryModel libraryModel) {
+        return new Names(libraryModel.getName());
     }
 
     private String buildBaseName() {
@@ -43,6 +46,10 @@ public class Names {
 
     public String getTaskName(String verb) {
         return verb + StringUtils.capitalize(baseName);
+    }
+
+    public String withSuffix(String suffix) {
+        return baseName + StringUtils.capitalize(suffix);
     }
 
     public RelativePath getRelativePath() {

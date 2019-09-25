@@ -5,11 +5,9 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.ProjectLayout;
-import org.gradle.api.file.RelativePath;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.internal.operations.BuildOperationExecutor;
 import org.gradle.internal.work.WorkerLeaseService;
-import org.gradle.language.base.plugins.LifecycleBasePlugin;
 import org.gradle.nativeplatform.Linkage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,16 +15,15 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.Iterator;
 
-public class NativeLibraryPlugin implements Plugin<Project> {
+public class CppLibraryPlugin implements Plugin<Project> {
 
-    public static final String COMPILER_DEF_FILE_PROPERTY = "com.devsmart.cppplugin.compilerdeffile";
-    private static final Logger LOGGER = LoggerFactory.getLogger(NativeLibraryPlugin.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CppLibraryPlugin.class);
 
     private final BuildOperationExecutor buildExecutor;
     private final WorkerLeaseService workerLease;
 
     @Inject
-    public NativeLibraryPlugin(BuildOperationExecutor buildOperationExecutor, WorkerLeaseService workerLeaseService) {
+    public CppLibraryPlugin(BuildOperationExecutor buildOperationExecutor, WorkerLeaseService workerLeaseService) {
         this.buildExecutor = buildOperationExecutor;
         this.workerLease = workerLeaseService;
     }
@@ -35,7 +32,6 @@ public class NativeLibraryPlugin implements Plugin<Project> {
     public void apply(Project project) {
         project.getPluginManager().apply(NativeBasePlugin.class);
         ObjectFactory objectFactory = project.getObjects();
-        ProjectLayout projectLayout = project.getLayout();
         NativeLibraryModel lib = objectFactory.newInstance(NativeLibraryModel.class, "main");
         project.getExtensions().add("library", lib);
         project.getComponents().add(lib);

@@ -1,6 +1,6 @@
 package com.devsmart.cppplugin
 
-import com.devsmart.cppplugin.plugin.NativeLibraryPlugin
+import com.devsmart.cppplugin.plugin.CppLibraryPlugin
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
@@ -35,7 +35,7 @@ class NativeLibraryModelPluginTest extends Specification {
 
 
         when:
-        project.pluginManager.apply(NativeLibraryPlugin)
+        project.pluginManager.apply(CppLibraryPlugin)
 
         then:
         project.library instanceof NativeLibraryModel
