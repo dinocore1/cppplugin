@@ -4,7 +4,7 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.provider.Provider;
 import org.gradle.nativeplatform.tasks.LinkSharedLibrary;
 
-public interface NativeSharedLibrary extends NativeBinary, NativeComponentWithRuntime {
+public interface NativeSharedLibrary extends NativeBinary, NativeComponentWithRuntimeArtifact {
 
     /**
      * Returns the link libraries to use to link the shared library. Includes the link libraries of the component's dependencies.

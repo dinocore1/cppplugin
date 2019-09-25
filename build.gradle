@@ -2,6 +2,7 @@ plugins {
     id 'groovy'
     id 'java'
     id 'java-gradle-plugin'
+    id 'maven-publish'
 }
 
 apply from: "$rootDir/gradle/integration-test.gradle"
@@ -19,8 +20,8 @@ repositories {
 gradlePlugin {
     plugins {
         cppLibraryPlugin {
-            id = 'com.devsmart.native-library'
-            implementationClass = 'com.devsmart.cppplugin.plugin.NativeLibraryPlugin'
+            id = 'com.devsmart.cpplibrary'
+            implementationClass = 'com.devsmart.cppplugin.plugin.CppLibraryPlugin'
         }
 
         toolchainsPlugin {

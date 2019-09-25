@@ -25,7 +25,7 @@ public class Names {
         return new Names(names);
     }
 
-    public static Names of(NativeLibraryModel libraryModel) {
+    public static Names of(CppLibrary libraryModel) {
         return new Names(libraryModel.getName());
     }
 

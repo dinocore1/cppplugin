@@ -1,20 +1,14 @@
 package com.devsmart.cppplugin;
 
 import org.gradle.api.Action;
-import org.gradle.api.file.RelativePath;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
-import org.gradle.nativeplatform.Linkage;
 import org.gradle.work.InputChanges;
-import org.gradle.workers.WorkAction;
-import org.gradle.workers.WorkQueue;
-import org.gradle.workers.WorkerExecutor;
 
 import javax.inject.Inject;
 import java.io.File;
 import java.util.Objects;
-import java.util.Set;
 
 
 public class CppCompileTask extends AbstractCompileTask {
@@ -30,7 +24,7 @@ public class CppCompileTask extends AbstractCompileTask {
 
 
 
-    public void from(NativeLibraryModel lib, VariantIdentity variant, ToolChain toolChain) {
+    public void from(CppLibrary lib, VariantIdentity variant, ToolChain toolChain) {
         /*
         this.variant = variant;
         getSource().setFrom(lib.getCppSource());

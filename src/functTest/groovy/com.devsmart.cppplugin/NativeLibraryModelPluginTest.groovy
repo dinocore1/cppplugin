@@ -38,7 +38,7 @@ class NativeLibraryModelPluginTest extends Specification {
         project.pluginManager.apply(CppLibraryPlugin)
 
         then:
-        project.library instanceof NativeLibraryModel
+        project.library instanceof CppLibrary
         project.library.baseName.get() == "testLib"
         project.library.cppSource.files == [srcFile] as Set
         project.library.publicHeaderDirs.files == [publicHeaders] as Set

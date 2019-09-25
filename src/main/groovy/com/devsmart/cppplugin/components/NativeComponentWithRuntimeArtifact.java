@@ -9,7 +9,7 @@ import org.gradle.api.provider.Provider;
  *   - shared lib file (.so)
  *   - executable file (.exe)
  */
-public interface NativeComponentWithRuntime extends NativeComponent {
+public interface NativeComponentWithRuntimeArtifact extends NativeComponent {
 
     /**
      * Returns the file of this component.
