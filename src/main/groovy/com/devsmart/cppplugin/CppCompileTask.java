@@ -1,55 +1,107 @@
 package com.devsmart.cppplugin;
 
+import com.google.common.base.Function;
 import org.gradle.api.Action;
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
-import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.*;
+import org.gradle.internal.Cast;
+import org.gradle.internal.operations.logging.BuildOperationLogger;
+import org.gradle.internal.operations.logging.BuildOperationLoggerFactory;
 import org.gradle.work.InputChanges;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 
 public class CppCompileTask extends AbstractCompileTask {
 
     private final Property<CppStandard> cppStandard;
-    private VariantIdentity variant;
+    private final Property<Platform> platform;
 
     @Inject
     public CppCompileTask() {
         super();
-        cppStandard = getObjectFactory().property(CppStandard.class);
+        ObjectFactory objects = getObjectFactory();
+        this.platform = objects.property(Platform.class);
+        this.cppStandard = objects.property(CppStandard.class);
     }
 
 
+    @Input
+    public Property<CppStandard> getCppStandard() {
+        return this.cppStandard;
+    }
 
-    public void from(CppLibrary lib, VariantIdentity variant, ToolChain toolChain) {
-        /*
-        this.variant = variant;
-        getSource().setFrom(lib.getCppSource());
-        getIncludes().setFrom(lib.getIncludeDirs());
+    @Nested
+    public Property<Platform> getTargetPlatform() {
+        return this.platform;
+    }
 
-        RelativePath outputDir = new RelativePath(false, "obj",
-                variant.getPlatform().getOperatingSystem().getName().toLowerCase(),
-                variant.getPlatform().getMachineArchitecture().getName().toLowerCase());
+    private class MyCompileSpec implements CppCompileSpec {
 
-        getOutputDir().set(getProject().getLayout().getBuildDirectory().dir(outputDir.getPathString()));
-        getToolChain().set(toolChain);
-        getCppStandard().set(lib.getCppStandard());
+        private final BuildOperationLogger operationLogger;
 
-        if(Linkage.SHARED == variant.getLinkage()) {
-            getFlags().add("-fpic");
+        MyCompileSpec() {
+            operationLogger = getOperationLoggerFactory().newOperationLogger(getName(), getTemporaryDir());
         }
 
-        if(variant.isDebuggable()) {
-            getFlags().add("-g");
+        @Override
+        public Set<File> getSourceFiles() {
+            return source.getFiles();
         }
-         */
+
+        @Override
+        public Set<File> getIncludeDirs() {
+            return includes.getFiles();
+        }
+
+        @Override
+        public Function<File, File> getSourceToObject() {
+            return null;
+        }
+
+        @Override
+        public CppStandard getCppStandard() {
+            return cppStandard.get();
+        }
+
+        @Override
+        public Map<String, String> getMacros() {
+            return getMacros();
+        }
+
+        @Override
+        public List<String> getArgs() {
+            return getArgs();
+        }
+
+        @Override
+        public BuildOperationLogger getOperationLogger() {
+            return operationLogger;
+        }
+
+        @Override
+        public void setOperationLogger(BuildOperationLogger oplogger) {
+
+        }
     }
 
     @TaskAction
     public void compile(InputChanges inputs) {
+
+        CppCompileSpec spec = new MyCompileSpec();
+
+        Tool<CppCompileSpec> cppCompilerTool = Cast.uncheckedCast(cppCompiler.get());
+        WorkResult result = cppCompilerTool.execute(spec);
+        setDidWork(result.getDidWork());
+
 
         /*
         WorkerExecutor workerExecutor = getWorkerExecutor();
@@ -97,10 +149,12 @@ public class CppCompileTask extends AbstractCompileTask {
         output.execute(outputFile);
     }
 
-    @Input
-    public Property<CppStandard> getCppStandard() {
-        return cppStandard;
+    @Inject
+    BuildOperationLoggerFactory getOperationLoggerFactory() {
+        throw new UnsupportedOperationException();
     }
+
+
 
 
 }

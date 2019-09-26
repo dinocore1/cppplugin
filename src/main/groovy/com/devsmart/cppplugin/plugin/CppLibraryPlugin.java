@@ -102,13 +102,12 @@ public class CppLibraryPlugin implements Plugin<Project> {
 
             VariantIdentity id = new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.STATIC);
             StaticLibrary staticLib = library.addStaticLibrary(id);
-            project.getTasks().create(staticLib.getNames().getTaskName("compile"), CppCompileTask.class, task -> {
+            CppCompileTask compileTask = project.getTasks().create(staticLib.getNames().getTaskName("compile"), CppCompileTask.class, task -> {
                 task.getToolChain().set(toolChain);
                 task.getSource().setFrom(staticLib.getCppSource());
                 task.getIncludes().setFrom(staticLib.getIncludeDirs());
-
-
             });
+            staticLib.getCompileTask().set(compileTask);
 
         });
 

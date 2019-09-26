@@ -23,37 +23,28 @@ public abstract class AbstractCompileTask extends DefaultTask {
     //See AbstractNativeCompileTask, AbstractTool<T extends BinaryToolSpec>, BuildOperationExecutor, NativeCompiler<T extends NativeCompileSpec>::newInvocationAction
 
 
-    final ConfigurableFileCollection source;
-    final ConfigurableFileCollection includes;
-    final Property<ToolChain> toolChain;
-    final Map<String, String> macros = new LinkedHashMap<>();
-    final Set<String> flags = new LinkedHashSet<>();
-    final DirectoryProperty outputDir;
+    protected final ConfigurableFileCollection source;
+    protected final ConfigurableFileCollection includes;
+    protected final Property<Tool> cppCompiler;
+    protected final Map<String, String> macros = new LinkedHashMap<>();
+    protected final Set<String> flags = new LinkedHashSet<>();
+    protected final DirectoryProperty outputDir;
 
     public AbstractCompileTask() {
-        ObjectFactory objectFactory = getObjectFactory();
-        source = objectFactory.fileCollection();
+        ObjectFactory objects = getObjectFactory();
+        source = objects.fileCollection();
         dependsOn(source);
-        includes = objectFactory.fileCollection();
+
+        this.includes = objects.fileCollection();
         dependsOn(includes);
-        toolChain = objectFactory.property(ToolChain.class);
-        outputDir = objectFactory.directoryProperty();
 
-    }
-
-    @Inject
-    public ObjectFactory getObjectFactory() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Inject
-    public WorkerExecutor getWorkerExecutor() {
-        throw new UnsupportedOperationException();
+        this.cppCompiler = objects.property(Tool.class);
+        this.outputDir = objects.directoryProperty();
     }
 
     @Internal
-    public Property<ToolChain> getToolChain() {
-        return this.toolChain;
+    public Property<Tool> getCppCompiler() {
+        return this.cppCompiler;
     }
 
     @SkipWhenEmpty
@@ -74,10 +65,6 @@ public abstract class AbstractCompileTask extends DefaultTask {
         return this.macros;
     }
 
-    @Nested
-    public Platform getTargetPlatform() {
-        return toolChain.get().getTargetPlatform();
-    }
 
     @Input
     public Set<String> getFlags() {
@@ -107,6 +94,16 @@ public abstract class AbstractCompileTask extends DefaultTask {
         });
         return retval;
 
+    }
+
+    @Inject
+    public ObjectFactory getObjectFactory() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Inject
+    public WorkerExecutor getWorkerExecutor() {
+        throw new UnsupportedOperationException();
     }
 
 }
