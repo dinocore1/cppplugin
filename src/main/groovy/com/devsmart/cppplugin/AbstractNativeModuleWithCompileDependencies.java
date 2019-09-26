@@ -8,6 +8,7 @@ import org.gradle.api.artifacts.type.ArtifactTypeDefinition;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.component.SoftwareComponent;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.internal.artifacts.ArtifactAttributes;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.language.ComponentDependencies;
@@ -15,20 +16,22 @@ import org.gradle.language.internal.DefaultComponentDependencies;
 
 import javax.inject.Inject;
 
-public abstract class AbstractNativeModule implements SoftwareComponent {
+public abstract class AbstractNativeModuleWithCompileDependencies implements SoftwareComponent {
 
 
     private final String name;
     private final Names names;
     private final VariantIdentity variant;
+    private final FileCollection sourceFiles;
     private final DefaultComponentDependencies dependencies;
     private final Configuration compileConfiguration;
     private final FileCollection includeDirs;
 
-    public AbstractNativeModule(String name, Names names, VariantIdentity variant, FileCollection componentIncludeDirs, Configuration componentImplementation) {
+    public AbstractNativeModuleWithCompileDependencies(String name, Names names, VariantIdentity variant, FileCollection sourceFiles, FileCollection componentIncludeDirs, Configuration componentImplementation) {
         this.name = name;
         this.names = names;
         this.variant = variant;
+        this.sourceFiles = sourceFiles;
 
         ObjectFactory objectFactory = getObjectFactory();
 
@@ -38,8 +41,8 @@ public abstract class AbstractNativeModule implements SoftwareComponent {
         this.compileConfiguration = getConfigurationContainer().create(names.withPrefix("compile"));
         this.compileConfiguration.setCanBeConsumed(false);
         this.compileConfiguration.getAttributes().attribute(Usage.USAGE_ATTRIBUTE, objectFactory.named(Usage.class, Usage.C_PLUS_PLUS_API));
-        //this.compileConfiguration.getAttributes().attribute(OperatingSystem.OPERATING_SYSTEM_ATTRIBUTE, this.variant.getPlatform().getOperatingSystem());
-        //this.compileConfiguration.getAttributes().attribute(MachineArchitecture.ARCHITECTURE_ATTRIBUTE, this.variant.getPlatform().getMachineArchitecture());
+        this.compileConfiguration.getAttributes().attribute(OperatingSystem.OPERATING_SYSTEM_ATTRIBUTE, this.variant.getPlatform().getOperatingSystem());
+        this.compileConfiguration.getAttributes().attribute(MachineArchitecture.ARCHITECTURE_ATTRIBUTE, this.variant.getPlatform().getMachineArchitecture());
         this.compileConfiguration.extendsFrom(getImplementationDependencies());
 
         ArtifactView includeDirs = compileConfiguration.getIncoming().artifactView(viewConfiguration -> {
@@ -61,6 +64,11 @@ public abstract class AbstractNativeModule implements SoftwareComponent {
         throw new UnsupportedOperationException();
     }
 
+    @Inject
+    protected ProjectLayout getProjectLayout() {
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     public String getName() {
         return name;
@@ -72,6 +80,10 @@ public abstract class AbstractNativeModule implements SoftwareComponent {
 
     public VariantIdentity getVariant() {
         return this.variant;
+    }
+
+    public FileCollection getSourceFiles() {
+        return this.sourceFiles;
     }
 
     public ComponentDependencies getDependencies() {

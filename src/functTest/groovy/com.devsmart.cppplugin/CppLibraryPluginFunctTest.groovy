@@ -17,7 +17,7 @@ class CppLibraryPluginFunctTest extends Specification {
         buildFile = testProjectDir.newFile('build.gradle')
         buildFile << """
             plugins {
-                id 'com.devsmart.cpplibrary'
+                id 'com.devsmart.cpp-library'
             }
         """
     }

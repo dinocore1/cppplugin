@@ -4,10 +4,6 @@ import org.gradle.api.Named;
 import org.gradle.api.attributes.Attribute;
 import org.gradle.api.tasks.Input;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.Objects;
 
 public class Platform implements Named {
@@ -15,24 +11,24 @@ public class Platform implements Named {
     public static Attribute<Platform> PLATFORM_ATTRIBUTE = Attribute.of(Platform.class);
 
 
-    private MachineArchitecture machineArchitecture;
-    private OperatingSystem operatingSystem;
+    private DefaultMachineArchitecture machineArchitecture;
+    private DefaultOperatingSystem operatingSystem;
 
-    public Platform(MachineArchitecture machineArchitecture, OperatingSystem operatingSystem) {
+    public Platform(DefaultMachineArchitecture machineArchitecture, DefaultOperatingSystem operatingSystem) {
         this.machineArchitecture = machineArchitecture;
         this.operatingSystem = operatingSystem;
     }
 
-    public MachineArchitecture getMachineArchitecture() {
+    public DefaultMachineArchitecture getMachineArchitecture() {
         return machineArchitecture;
     }
 
-    public OperatingSystem getOperatingSystem() {
+    public DefaultOperatingSystem getOperatingSystem() {
         return operatingSystem;
     }
 
     public static Platform getHostPlatform() {
-        return new Platform(MachineArchitecture.getHostArchitecture(), OperatingSystem.getHostOS());
+        return new Platform(DefaultMachineArchitecture.getHostArchitecture(), DefaultOperatingSystem.getHostOS());
     }
 
     @Override

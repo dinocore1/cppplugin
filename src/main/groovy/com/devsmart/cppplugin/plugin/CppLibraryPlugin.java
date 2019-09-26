@@ -102,14 +102,13 @@ public class CppLibraryPlugin implements Plugin<Project> {
 
             VariantIdentity id = new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.STATIC);
             StaticLibrary staticLib = library.addStaticLibrary(id);
-            project.getTasks().create("assemble2", Copy.class, copy -> {
-                copy.from(staticLib.getIncludeDirs());
-                copy.into(project.getLayout().getBuildDirectory().dir("kewl"));
-            });
-            addTasksForVariant(id, project, library, toolChain);
+            project.getTasks().create(staticLib.getNames().getTaskName("compile"), CppCompileTask.class, task -> {
+                task.getToolChain().set(toolChain);
+                task.getSource().setFrom(staticLib.getCppSource());
+                task.getIncludes().setFrom(staticLib.getIncludeDirs());
 
-            id = new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.SHARED);
-            addTasksForVariant(id, project, library, toolChain);
+
+            });
 
         });
 

@@ -15,22 +15,22 @@ public class OperatingSystemFromNameTest {
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                { "linux", OperatingSystem.LINUX },
-                { "windows", OperatingSystem.WINDOWS }
+                { "linux", DefaultOperatingSystem.LINUX },
+                { "windows", DefaultOperatingSystem.WINDOWS }
         });
     }
 
     private final String input;
-    private final OperatingSystem expected;
+    private final DefaultOperatingSystem expected;
 
-    public OperatingSystemFromNameTest(String input, OperatingSystem expected) {
+    public OperatingSystemFromNameTest(String input, DefaultOperatingSystem expected) {
         this.input = input;
         this.expected = expected;
     }
 
     @Test
     public void test() {
-        OperatingSystem os = OperatingSystem.fromName(input);
+        DefaultOperatingSystem os = DefaultOperatingSystem.fromName(input);
         assertEquals(expected, os);
     }
 }

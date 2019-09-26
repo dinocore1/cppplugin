@@ -15,38 +15,38 @@ public class MachineArchitectureFromNameTest {
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                { "x86", MachineArchitecture.X86 },
-                { "i386", MachineArchitecture.X86 },
-                { "i686", MachineArchitecture.X86 },
-                { "ia-32", MachineArchitecture.X86 },
+                { "x86", DefaultMachineArchitecture.X86 },
+                { "i386", DefaultMachineArchitecture.X86 },
+                { "i686", DefaultMachineArchitecture.X86 },
+                { "ia-32", DefaultMachineArchitecture.X86 },
 
-                { "x86-64", MachineArchitecture.X86_64 },
-                { "x86_64", MachineArchitecture.X86_64 },
-                { "x64", MachineArchitecture.X86_64 },
-                { "amd64", MachineArchitecture.X86_64 },
+                { "x86-64", DefaultMachineArchitecture.X86_64 },
+                { "x86_64", DefaultMachineArchitecture.X86_64 },
+                { "x64", DefaultMachineArchitecture.X86_64 },
+                { "amd64", DefaultMachineArchitecture.X86_64 },
 
-                { "arm-v7", MachineArchitecture.ARM_V7 },
-                { "arm", MachineArchitecture.ARM_V7 },
-                { "armv7", MachineArchitecture.ARM_V7 },
-                { "arm-v7a", MachineArchitecture.ARM_V7 },
-                { "arm32", MachineArchitecture.ARM_V7 },
+                { "arm-v7", DefaultMachineArchitecture.ARM_V7 },
+                { "arm", DefaultMachineArchitecture.ARM_V7 },
+                { "armv7", DefaultMachineArchitecture.ARM_V7 },
+                { "arm-v7a", DefaultMachineArchitecture.ARM_V7 },
+                { "arm32", DefaultMachineArchitecture.ARM_V7 },
 
-                { "arm64", MachineArchitecture.ARM_V8 },
-                { "arm-v8", MachineArchitecture.ARM_V8 },
+                { "arm64", DefaultMachineArchitecture.ARM_V8 },
+                { "arm-v8", DefaultMachineArchitecture.ARM_V8 },
         });
     }
 
     private final String input;
-    private final MachineArchitecture expected;
+    private final DefaultMachineArchitecture expected;
 
-    public MachineArchitectureFromNameTest(String input, MachineArchitecture expected) {
+    public MachineArchitectureFromNameTest(String input, DefaultMachineArchitecture expected) {
         this.input = input;
         this.expected = expected;
     }
 
     @Test
     public void test() {
-        MachineArchitecture arch = MachineArchitecture.fromName(input);
+        DefaultMachineArchitecture arch = DefaultMachineArchitecture.fromName(input);
         assertEquals(expected, arch);
     }
 }
