@@ -4,12 +4,9 @@ import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
-import org.gradle.api.file.FileCollection;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.*;
-import org.gradle.internal.impldep.com.google.common.base.Predicate;
-import org.gradle.internal.impldep.com.google.common.collect.Iterables;
 import org.gradle.workers.WorkerExecutor;
 
 import javax.inject.Inject;
@@ -25,7 +22,7 @@ public abstract class AbstractCompileTask extends DefaultTask {
 
     protected final ConfigurableFileCollection source;
     protected final ConfigurableFileCollection includes;
-    protected final Property<Tool> cppCompiler;
+    protected final Property<ToolChain> toolchain;
     protected final Map<String, String> macros = new LinkedHashMap<>();
     protected final Set<String> flags = new LinkedHashSet<>();
     protected final DirectoryProperty outputDir;
@@ -38,13 +35,13 @@ public abstract class AbstractCompileTask extends DefaultTask {
         this.includes = objects.fileCollection();
         dependsOn(includes);
 
-        this.cppCompiler = objects.property(Tool.class);
+        this.toolchain = objects.property(ToolChain.class);
         this.outputDir = objects.directoryProperty();
     }
 
     @Internal
-    public Property<Tool> getCppCompiler() {
-        return this.cppCompiler;
+    public Property<ToolChain> getToolchain() {
+        return this.toolchain;
     }
 
     @SkipWhenEmpty

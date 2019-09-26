@@ -11,7 +11,7 @@ public interface CppCompileSpec extends ToolSpec {
 
     Set<File> getSourceFiles();
     Set<File> getIncludeDirs();
-    Function<File, File> getSourceToObject();
+    File getObjectFile(File sourceFile);
     CppStandard getCppStandard();
     Map<String, String> getMacros();
 

@@ -1,23 +1,20 @@
 package com.devsmart.cppplugin;
 
-import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 import org.gradle.api.Action;
-import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.model.ObjectFactory;
-import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
-import org.gradle.api.tasks.*;
-import org.gradle.internal.Cast;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Nested;
+import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.WorkResult;
 import org.gradle.internal.operations.logging.BuildOperationLogger;
 import org.gradle.internal.operations.logging.BuildOperationLoggerFactory;
 import org.gradle.work.InputChanges;
 
 import javax.inject.Inject;
 import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 
 public class CppCompileTask extends AbstractCompileTask {
@@ -63,8 +60,12 @@ public class CppCompileTask extends AbstractCompileTask {
         }
 
         @Override
-        public Function<File, File> getSourceToObject() {
-            return null;
+        public File getObjectFile(File sourceFile) {
+            Set<File> retval = new HashSet<>();
+            getOutputsFileForInput(sourceFile, o -> {
+                retval.add(o);
+            });
+            return Iterables.getFirst(retval, null);
         }
 
         @Override
@@ -95,49 +96,16 @@ public class CppCompileTask extends AbstractCompileTask {
 
     @TaskAction
     public void compile(InputChanges inputs) {
-
         CppCompileSpec spec = new MyCompileSpec();
-
-        Tool<CppCompileSpec> cppCompilerTool = Cast.uncheckedCast(cppCompiler.get());
+        ToolChain theToolchain = getToolchain().get();
+        Tool<CppCompileSpec> cppCompilerTool = theToolchain.getCppCompiler();
         WorkResult result = cppCompilerTool.execute(spec);
         setDidWork(result.getDidWork());
-
-
-        /*
-        WorkerExecutor workerExecutor = getWorkerExecutor();
-
-        ToolChain theToolchain = toolChain.get();
-        CppCompiler theCppCompiler = theToolchain.getCppCompiler();
-
-
-        WorkQueue queue = workerExecutor.noIsolation();
-        source.forEach( f -> {
-
-            Class<? extends WorkAction<CppCompileParameters>> compileAction = theCppCompiler.getCompileActionClass();
-
-            queue.submit(compileAction, params -> {
-                params.getExePath().set(theCppCompiler.getExePath());
-                params.getSrcFile().set(f);
-                getOutputsFileForInput(f, o -> {
-                    params.getOutputFile().set(o);
-                });
-                params.getIncludeDirs().set(includes);
-                params.getMacros().set(macros);
-                params.getFlags().set(flags);
-                params.getCppStandard().set(cppStandard);
-            });
-
-
-        });
-
-        queue.await();
-         */
-
     }
 
     @Override
     protected void getOutputsFileForInput(File input, Action<File> output) {
-        ToolChain theToolchain = toolChain.get();
+        ToolChain theToolchain = getToolchain().get();
         File theOutputDir = outputDir.getAsFile().get();
 
         int hash = Objects.hash(variant, getRelitivePath(input));
@@ -153,8 +121,6 @@ public class CppCompileTask extends AbstractCompileTask {
     BuildOperationLoggerFactory getOperationLoggerFactory() {
         throw new UnsupportedOperationException();
     }
-
-
 
 
 }

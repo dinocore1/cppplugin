@@ -86,7 +86,25 @@ public class DefaultGccToolchain implements ToolChain {
         }
 
         List<String> getArgs(CppCompileSpec spec, File sourceFile) {
-            return null;
+            List<String> args = new ArrayList<String>();
+            args.add("-c");
+            args.add(sourceFile.getAbsolutePath());
+
+            spec.getIncludeDirs().forEach(f -> {
+                args.add("-I");
+                args.add(f.getAbsolutePath());
+            });
+
+            spec.getArgs().forEach(a -> {
+                args.add(a);
+            });
+
+            args.add("-std=" + spec.getCppStandard());
+
+            args.add("-o");
+            args.add(spec.getObjectFile(sourceFile).getAbsolutePath());
+
+            return args;
         }
     }
 
