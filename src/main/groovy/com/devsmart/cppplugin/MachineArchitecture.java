@@ -11,7 +11,7 @@ import java.util.List;
 
 public class MachineArchitecture implements Named {
 
-    public static final Attribute<MachineArchitecture> MACHINE_ATTRIBUTE = Attribute.of(MachineArchitecture.class);
+    public static final Attribute<MachineArchitecture> ARCHITECTURE_ATTRIBUTE = Attribute.of("com.devsmart.architecture", MachineArchitecture.class);
 
 
     public static final KnownArchitecture X86 = new MachineArchitecture.KnownArchitecture("x86", new String[]{"i386", "ia-32", "i686"});
@@ -21,7 +21,6 @@ public class MachineArchitecture implements Named {
     public static final MachineArchitecture UNKNOWN = new MachineArchitecture("unknown");
 
     public static final List<KnownArchitecture> KNOWN_ARCHITECTURES = Arrays.asList(X86, X86_64, ARM_V7, ARM_V8);
-
 
 
     protected String name;

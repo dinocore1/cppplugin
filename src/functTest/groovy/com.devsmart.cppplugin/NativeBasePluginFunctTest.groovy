@@ -17,7 +17,7 @@ class NativeBasePluginFunctTest extends Specification {
         buildFile << """
             plugins {
                 id 'com.devsmart.toolchains' 
-                id 'com.devsmart.native-library' 
+                id 'com.devsmart.cpp-library' 
             }
             
             toolchains {
@@ -74,12 +74,12 @@ class NativeBasePluginFunctTest extends Specification {
         def result = GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
                 .withPluginClasspath()
-                .withArguments('assemble')
+                .withArguments('assemble2')
                 .withDebug(true)
                 .build()
 
         then:
-        result.task(":assemble").outcome == SUCCESS
+        result.task(":assemble2").outcome == SUCCESS
 
     }
 }

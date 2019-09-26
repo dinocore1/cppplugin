@@ -1,17 +1,21 @@
 package com.devsmart.cppplugin;
 
 import org.gradle.api.Named;
+import org.gradle.api.attributes.Attribute;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class OperatingSystem implements Named {
 
+    public static final Attribute<? super OperatingSystem> OPERATING_SYSTEM_ATTRIBUTE = Attribute.of("com.devsmart.operatingsystem", OperatingSystem.class);;
+
     public static final OperatingSystem LINUX = new OperatingSystem("linux");
     public static final OperatingSystem WINDOWS = new OperatingSystem("windows");
     public static final OperatingSystem UNKNOWN = new OperatingSystem("unknown");
 
     public static final List<OperatingSystem> KNOWN_OPERATINGSYSTEMS = Arrays.asList(LINUX, WINDOWS);
+
 
     private String name;
 

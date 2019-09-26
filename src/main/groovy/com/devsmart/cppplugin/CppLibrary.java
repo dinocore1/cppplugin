@@ -107,7 +107,19 @@ public class CppLibrary implements SoftwareComponent {
         return this.source;
     }
 
+    public FileCollection getAllIncludeDirs() {
+        return getProjectLayout().files(privateHeadersWithConvention, publicHeadersWithConvention);
+    }
+
+    public void cppStandard(String standard) {
+
+    }
+
     public StaticLibrary addStaticLibrary(VariantIdentity variant) {
+        Names names = Names.of(variant);
+        StaticLibrary staticLibrary = getObjectFactory().newInstance(StaticLibrary.class, name, names, variant, getAllIncludeDirs(), dependencies.getImplementationDependencies());
+
+        return staticLibrary;
 
     }
 

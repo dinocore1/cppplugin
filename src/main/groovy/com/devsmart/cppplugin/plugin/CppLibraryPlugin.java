@@ -4,10 +4,15 @@ import com.devsmart.cppplugin.*;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.attributes.Usage;
+import org.gradle.api.internal.artifacts.ArtifactAttributes;
+import org.gradle.api.internal.artifacts.transform.UnzipTransform;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.tasks.Copy;
 import org.gradle.internal.operations.BuildOperationExecutor;
 import org.gradle.internal.work.WorkerLeaseService;
+import org.gradle.language.base.plugins.LifecycleBasePlugin;
 import org.gradle.language.cpp.CppPlatform;
 import org.gradle.language.cpp.internal.DefaultCppPlatform;
 import org.gradle.language.cpp.plugins.CppLangPlugin;
@@ -33,6 +38,9 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.Iterator;
 
+import static org.gradle.api.artifacts.type.ArtifactTypeDefinition.DIRECTORY_TYPE;
+import static org.gradle.api.artifacts.type.ArtifactTypeDefinition.ZIP_TYPE;
+
 public class CppLibraryPlugin implements Plugin<Project> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CppLibraryPlugin.class);
@@ -51,9 +59,13 @@ public class CppLibraryPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
-        project.getPluginManager().apply(NativeComponentPlugin.class);
-        project.getPluginManager().apply(CppLangPlugin.class);
+        project.getPluginManager().apply(LifecycleBasePlugin.class);
 
+        // Add incoming artifact transforms
+        final DependencyHandler dependencyHandler = project.getDependencies();
+        final ObjectFactory objects = project.getObjects();
+
+        addHeaderZipTransform(dependencyHandler, objects);
 
         ObjectFactory objectFactory = project.getObjects();
         CppLibrary library = objectFactory.newInstance(CppLibrary.class, "main");
@@ -67,7 +79,7 @@ public class CppLibraryPlugin implements Plugin<Project> {
         //final BuildOperationExecutor buildOperationExecutor = serviceRegistry.get(BuildOperationExecutor.class);
 
 
-
+        /*
         NativeToolChainRegistry toolchainRegistry = project.getExtensions().getByType(NativeToolChainRegistry.class);
         toolchainRegistry.all(toolChain -> {
             LOGGER.info("toolchain " + toolChain);
@@ -83,17 +95,17 @@ public class CppLibraryPlugin implements Plugin<Project> {
             DefaultNativePlatform platform = DefaultNativePlatform.host();
             NativeToolChain theToolchain = toolchainRegistry.getForPlatform(platform);
         });
-
-
-        project.getTasks().create("assemble2", Copy.class, task -> {
-            task.from(library.getLinkLibraries());
-            task.into(project.getBuildDir());
-        });
+        */
 
 
         project.getComponents().withType(ToolChain.class, toolChain -> {
 
             VariantIdentity id = new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.STATIC);
+            StaticLibrary staticLib = library.addStaticLibrary(id);
+            project.getTasks().create("assemble2", Copy.class, copy -> {
+                copy.from(staticLib.getIncludeDirs());
+                copy.into(project.getLayout().getBuildDirectory().dir("kewl"));
+            });
             addTasksForVariant(id, project, library, toolChain);
 
             id = new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.SHARED);
@@ -102,6 +114,15 @@ public class CppLibraryPlugin implements Plugin<Project> {
         });
 
 
+    }
+
+    private void addHeaderZipTransform(DependencyHandler dependencyHandler, ObjectFactory objects) {
+        dependencyHandler.registerTransform(UnzipTransform.class, variantTransform -> {
+            variantTransform.getFrom().attribute(ArtifactAttributes.ARTIFACT_FORMAT, ZIP_TYPE);
+            variantTransform.getFrom().attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.class, Usage.C_PLUS_PLUS_API));
+            variantTransform.getTo().attribute(ArtifactAttributes.ARTIFACT_FORMAT, DIRECTORY_TYPE);
+            variantTransform.getTo().attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.class, Usage.C_PLUS_PLUS_API));
+        });
     }
 
     private void addTasksForVariant(VariantIdentity id, Project project, CppLibrary lib, ToolChain toolChain) {

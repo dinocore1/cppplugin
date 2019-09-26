@@ -52,6 +52,10 @@ public class Names {
         return baseName + StringUtils.capitalize(suffix);
     }
 
+    public String withPrefix(String prefix) {
+        return prefix + StringUtils.capitalize(baseName);
+    }
+
     public RelativePath getRelativePath() {
         return new RelativePath(false, names);
     }

@@ -20,7 +20,7 @@ repositories {
 gradlePlugin {
     plugins {
         cppLibraryPlugin {
-            id = 'com.devsmart.cpplibrary'
+            id = 'com.devsmart.cpp-library'
             implementationClass = 'com.devsmart.cppplugin.plugin.CppLibraryPlugin'
         }
 
