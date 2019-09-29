@@ -1,5 +1,6 @@
 package com.devsmart.cppplugin
 
+import com.devsmart.cppplugin.tasks.CppCompileTask
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder

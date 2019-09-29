@@ -1,5 +1,6 @@
-package com.devsmart.cppplugin;
+package com.devsmart.cppplugin.tasks;
 
+import com.devsmart.cppplugin.*;
 import com.google.common.collect.Iterables;
 import org.gradle.api.Action;
 import org.gradle.api.model.ObjectFactory;

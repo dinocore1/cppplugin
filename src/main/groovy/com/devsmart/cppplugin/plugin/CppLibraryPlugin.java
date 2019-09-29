@@ -1,6 +1,7 @@
 package com.devsmart.cppplugin.plugin;
 
 import com.devsmart.cppplugin.*;
+import com.devsmart.cppplugin.tasks.CppCompileTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.dsl.DependencyHandler;

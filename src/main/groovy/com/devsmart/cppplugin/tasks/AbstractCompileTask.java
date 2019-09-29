@@ -1,5 +1,6 @@
-package com.devsmart.cppplugin;
+package com.devsmart.cppplugin.tasks;
 
+import com.devsmart.cppplugin.ToolChain;
 import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
