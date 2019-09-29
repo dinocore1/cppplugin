@@ -4,6 +4,7 @@ import org.gradle.internal.operations.BuildOperationDescriptor;
 import org.gradle.internal.operations.logging.BuildOperationLogger;
 
 import java.io.File;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class DefaultCommandLineToolInvocation implements CommandLineToolInvocation {
@@ -12,6 +13,7 @@ public class DefaultCommandLineToolInvocation implements CommandLineToolInvocati
     private Iterable<String> args;
     private String description;
     private BuildOperationLogger logger;
+    private Map<String, String> environment = new LinkedHashMap<>();
 
     public DefaultCommandLineToolInvocation(File exe, Iterable<String> args, String description, BuildOperationLogger logger) {
         this.exe = exe;
@@ -27,7 +29,7 @@ public class DefaultCommandLineToolInvocation implements CommandLineToolInvocati
 
     @Override
     public Map<String, String> getEnvironment() {
-        return null;
+        return environment;
     }
 
     @Override

@@ -3,40 +3,21 @@ package com.devsmart.cppplugin.plugin;
 import com.devsmart.cppplugin.*;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.internal.artifacts.ArtifactAttributes;
 import org.gradle.api.internal.artifacts.transform.UnzipTransform;
 import org.gradle.api.model.ObjectFactory;
-import org.gradle.api.tasks.Copy;
+import org.gradle.api.tasks.TaskProvider;
 import org.gradle.internal.operations.BuildOperationExecutor;
 import org.gradle.internal.work.WorkerLeaseService;
 import org.gradle.language.base.plugins.LifecycleBasePlugin;
-import org.gradle.language.cpp.CppPlatform;
-import org.gradle.language.cpp.internal.DefaultCppPlatform;
-import org.gradle.language.cpp.plugins.CppLangPlugin;
 import org.gradle.language.nativeplatform.internal.toolchains.ToolChainSelector;
 import org.gradle.nativeplatform.Linkage;
-import org.gradle.nativeplatform.MachineArchitecture;
-import org.gradle.nativeplatform.OperatingSystemFamily;
-import org.gradle.nativeplatform.TargetMachine;
-import org.gradle.nativeplatform.internal.DefaultTargetMachine;
-import org.gradle.nativeplatform.internal.DefaultTargetMachineFactory;
-import org.gradle.nativeplatform.platform.Architecture;
-import org.gradle.nativeplatform.platform.NativePlatform;
-import org.gradle.nativeplatform.platform.OperatingSystem;
-import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform;
-import org.gradle.nativeplatform.platform.internal.NativePlatformInternal;
-import org.gradle.nativeplatform.plugins.NativeComponentPlugin;
-import org.gradle.nativeplatform.toolchain.NativeToolChain;
-import org.gradle.nativeplatform.toolchain.NativeToolChainRegistry;
-import org.gradle.nativeplatform.toolchain.internal.plugins.StandardToolChainsPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.Iterator;
 
 import static org.gradle.api.artifacts.type.ArtifactTypeDefinition.DIRECTORY_TYPE;
 import static org.gradle.api.artifacts.type.ArtifactTypeDefinition.ZIP_TYPE;
@@ -102,12 +83,19 @@ public class CppLibraryPlugin implements Plugin<Project> {
 
             VariantIdentity id = new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.STATIC);
             StaticLibrary staticLib = library.addStaticLibrary(id);
-            CppCompileTask compileTask = project.getTasks().create(staticLib.getNames().getTaskName("compile"), CppCompileTask.class, task -> {
+            TaskProvider<CppCompileTask> compileTask = project.getTasks().register(staticLib.getNames().getTaskName("compile"), CppCompileTask.class, task -> {
+                task.getVariant().set(id);
                 task.getToolchain().set(toolChain);
+                task.getCppStandard().set(library.getCppStandard());
                 task.getSource().setFrom(staticLib.getCppSource());
                 task.getIncludes().setFrom(staticLib.getIncludeDirs());
+                task.getOutputDir().set(project.getLayout().getBuildDirectory().dir("obj/cpp"));
             });
             staticLib.getCompileTask().set(compileTask);
+
+            project.getTasks().named("assemble", task -> {
+                task.dependsOn(compileTask);
+            });
 
         });
 

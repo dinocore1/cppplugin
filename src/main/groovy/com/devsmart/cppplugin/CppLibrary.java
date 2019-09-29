@@ -28,6 +28,7 @@ public class CppLibrary implements SoftwareComponent {
     private final FileCollection privateHeadersWithConvention;
     private final ConfigurableFileCollection publicHeaders;
     private final FileCollection publicHeadersWithConvention;
+    private final Property<CppStandard> cppStandard;
 
 
     @Inject
@@ -35,7 +36,7 @@ public class CppLibrary implements SoftwareComponent {
         this.name = name;
         this.baseName = objectFactory.property(String.class);
         this.dependencies = objectFactory.newInstance(DefaultComponentDependencies.class, "implementation");
-
+        this.cppStandard = objectFactory.property(CppStandard.class).convention(objectFactory.named(CppStandard.class, CppStandard.CPP98));
         this.source = objectFactory.fileCollection();
         this.cppSource = createSourceView(source,"src/" + name + "/cpp", Arrays.asList("cpp", "c++", "cc"));
         this.privateHeaders = objectFactory.fileCollection();
@@ -112,17 +113,18 @@ public class CppLibrary implements SoftwareComponent {
     }
 
     public void cppStandard(String standard) {
+        this.cppStandard.set(getObjectFactory().named(CppStandard.class, standard));
+    }
 
+    public Property<CppStandard> getCppStandard() {
+        return this.cppStandard;
     }
 
     public StaticLibrary addStaticLibrary(VariantIdentity variant) {
         Names names = Names.of(variant);
-        StaticLibrary staticLibrary = getObjectFactory().newInstance(StaticLibrary.class, name, names, variant, getAllIncludeDirs(), dependencies.getImplementationDependencies());
+        StaticLibrary staticLibrary = getObjectFactory().newInstance(StaticLibrary.class, name, names, variant, cppSource, getAllIncludeDirs(), dependencies.getImplementationDependencies());
 
         return staticLibrary;
 
     }
-
-
-
 }

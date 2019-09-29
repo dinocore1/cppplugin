@@ -3,6 +3,7 @@ package com.devsmart.cppplugin;
 import org.gradle.api.Named;
 import org.gradle.api.attributes.Attribute;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Nested;
 
 import java.util.Objects;
 
@@ -11,24 +12,22 @@ public class Platform implements Named {
     public static Attribute<Platform> PLATFORM_ATTRIBUTE = Attribute.of(Platform.class);
 
 
-    private DefaultMachineArchitecture machineArchitecture;
-    private DefaultOperatingSystem operatingSystem;
+    private MachineArchitecture machineArchitecture;
+    private OperatingSystem operatingSystem;
 
-    public Platform(DefaultMachineArchitecture machineArchitecture, DefaultOperatingSystem operatingSystem) {
+    public Platform(MachineArchitecture machineArchitecture, OperatingSystem operatingSystem) {
         this.machineArchitecture = machineArchitecture;
         this.operatingSystem = operatingSystem;
     }
 
-    public DefaultMachineArchitecture getMachineArchitecture() {
+    @Nested
+    public MachineArchitecture getMachineArchitecture() {
         return machineArchitecture;
     }
 
-    public DefaultOperatingSystem getOperatingSystem() {
+    @Nested
+    public OperatingSystem getOperatingSystem() {
         return operatingSystem;
-    }
-
-    public static Platform getHostPlatform() {
-        return new Platform(DefaultMachineArchitecture.getHostArchitecture(), DefaultOperatingSystem.getHostOS());
     }
 
     @Override

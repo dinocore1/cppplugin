@@ -42,22 +42,6 @@ class NativeBasePluginFunctTest extends Specification {
               cppStandard 'c++11'
             }
             
-            repositories {
-                maven {
-                    url 'https://artifactory.videray.com/artifactory/native-libs'
-                    if (project.hasProperty("gartifactoryUsername") 
-                        && project.hasProperty("gartifactoryPassword")) {
-                        credentials {
-                            username = gartifactoryUsername
-                            password = gartifactoryPassword
-                        }
-                    }
-                }
-            }
-        
-            dependencies {
-                implementation 'com.videray:core:1.0.2-SNAPSHOT'
-            }
         """
 
         File mainSrcDir = testProjectDir.newFolder("src", "main", "cpp");
@@ -74,12 +58,12 @@ class NativeBasePluginFunctTest extends Specification {
         def result = GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
                 .withPluginClasspath()
-                .withArguments('assemble2')
+                .withArguments('assemble')
                 .withDebug(true)
                 .build()
 
         then:
-        result.task(":assemble2").outcome == SUCCESS
+        result.task(":assemble").outcome == SUCCESS
 
     }
 }

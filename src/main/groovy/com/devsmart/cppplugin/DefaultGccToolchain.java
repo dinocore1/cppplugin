@@ -57,7 +57,8 @@ public class DefaultGccToolchain implements ToolChain {
     }
 
     public void platform(String os, String arch) {
-        platform = new Platform(DefaultMachineArchitecture.fromName(arch), DefaultOperatingSystem.fromName(os));
+        platform = new Platform(objectFactory.named(MachineArchitecture.class, arch),
+                objectFactory.named(OperatingSystem.class, os));
     }
 
     public void cppCompiler(Action<? super CppCompiler> config) {

@@ -32,11 +32,6 @@ public class DefaultStaticLibraryArchiverSpec implements StaticLibraryArchiverSp
     }
 
     @Override
-    public void args(List<String> args) {
-
-    }
-
-    @Override
     public BuildOperationLogger getOperationLogger() {
         return null;
     }

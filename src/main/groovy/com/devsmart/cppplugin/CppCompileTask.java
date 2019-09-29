@@ -4,10 +4,7 @@ import com.google.common.collect.Iterables;
 import org.gradle.api.Action;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
-import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.Nested;
-import org.gradle.api.tasks.TaskAction;
-import org.gradle.api.tasks.WorkResult;
+import org.gradle.api.tasks.*;
 import org.gradle.internal.operations.logging.BuildOperationLogger;
 import org.gradle.internal.operations.logging.BuildOperationLoggerFactory;
 import org.gradle.work.InputChanges;
@@ -20,13 +17,13 @@ import java.util.*;
 public class CppCompileTask extends AbstractCompileTask {
 
     private final Property<CppStandard> cppStandard;
-    private final Property<Platform> platform;
+    private final Property<VariantIdentity> variant;
 
     @Inject
     public CppCompileTask() {
         super();
         ObjectFactory objects = getObjectFactory();
-        this.platform = objects.property(Platform.class);
+        this.variant = objects.property(VariantIdentity.class);
         this.cppStandard = objects.property(CppStandard.class);
     }
 
@@ -37,8 +34,13 @@ public class CppCompileTask extends AbstractCompileTask {
     }
 
     @Nested
-    public Property<Platform> getTargetPlatform() {
-        return this.platform;
+    public Platform getTargetPlatform() {
+        return this.variant.get().getPlatform();
+    }
+
+    @Internal
+    public Property<VariantIdentity> getVariant() {
+        return this.variant;
     }
 
     private class MyCompileSpec implements CppCompileSpec {
@@ -80,7 +82,7 @@ public class CppCompileTask extends AbstractCompileTask {
 
         @Override
         public List<String> getArgs() {
-            return getArgs();
+            return Arrays.asList();
         }
 
         @Override
@@ -99,7 +101,9 @@ public class CppCompileTask extends AbstractCompileTask {
         CppCompileSpec spec = new MyCompileSpec();
         ToolChain theToolchain = getToolchain().get();
         Tool<CppCompileSpec> cppCompilerTool = theToolchain.getCppCompiler();
+        spec.getOperationLogger().start();
         WorkResult result = cppCompilerTool.execute(spec);
+        spec.getOperationLogger().done();
         setDidWork(result.getDidWork());
     }
 
@@ -108,7 +112,7 @@ public class CppCompileTask extends AbstractCompileTask {
         ToolChain theToolchain = getToolchain().get();
         File theOutputDir = outputDir.getAsFile().get();
 
-        int hash = Objects.hash(variant, getRelitivePath(input));
+        int hash = Objects.hash(variant.get(), getRelitivePath(input));
         String hexStr = Integer.toHexString(hash);
         final String objFileExt = theToolchain.getObjectFileExtention();
         String outputFileName = String.format("%s_%s.%s", input.getName(), hexStr, objFileExt);
@@ -118,7 +122,7 @@ public class CppCompileTask extends AbstractCompileTask {
     }
 
     @Inject
-    BuildOperationLoggerFactory getOperationLoggerFactory() {
+    protected BuildOperationLoggerFactory getOperationLoggerFactory() {
         throw new UnsupportedOperationException();
     }
 
