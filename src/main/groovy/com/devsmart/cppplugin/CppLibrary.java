@@ -1,6 +1,7 @@
 package com.devsmart.cppplugin;
 
 import org.gradle.api.Action;
+import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.component.SoftwareComponent;
 import org.gradle.api.file.ConfigurableFileCollection;
@@ -35,7 +36,9 @@ public class CppLibrary implements SoftwareComponent {
     public CppLibrary(String name, ObjectFactory objectFactory, ConfigurationContainer configurations) {
         this.name = name;
         this.baseName = objectFactory.property(String.class);
-        this.dependencies = objectFactory.newInstance(DefaultComponentDependencies.class, "implementation");
+        this.dependencies = objectFactory.newInstance(DefaultComponentDependencies.class, name + "Implementation");
+        Configuration implementationConfiguration = configurations.getByName("implementation");
+        this.dependencies.getImplementationDependencies().extendsFrom(implementationConfiguration);
         this.cppStandard = objectFactory.property(CppStandard.class).convention(objectFactory.named(CppStandard.class, CppStandard.CPP98));
         this.source = objectFactory.fileCollection();
         this.cppSource = createSourceView(source,"src/" + name + "/cpp", Arrays.asList("cpp", "c++", "cc"));

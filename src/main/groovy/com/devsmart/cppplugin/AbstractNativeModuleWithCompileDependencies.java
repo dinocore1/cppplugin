@@ -25,7 +25,7 @@ public abstract class AbstractNativeModuleWithCompileDependencies implements Sof
     private final Names names;
     private final VariantIdentity variant;
     private final FileCollection sourceFiles;
-    private final DefaultComponentDependencies dependencies;
+    private final Configuration implementationConfiguration;
     private final Configuration compileConfiguration;
     private final FileCollection includeDirs;
     private final Property<Task> compileTask;
@@ -35,18 +35,16 @@ public abstract class AbstractNativeModuleWithCompileDependencies implements Sof
         this.names = names;
         this.variant = variant;
         this.sourceFiles = sourceFiles;
+        this.implementationConfiguration = componentImplementation;
 
         ObjectFactory objectFactory = getObjectFactory();
-
-        this.dependencies = objectFactory.newInstance(DefaultComponentDependencies.class, name + "Implementation");
-        this.dependencies.getImplementationDependencies().extendsFrom(componentImplementation);
 
         this.compileConfiguration = getConfigurationContainer().create(names.withPrefix("compile"));
         this.compileConfiguration.setCanBeConsumed(false);
         this.compileConfiguration.getAttributes().attribute(Usage.USAGE_ATTRIBUTE, objectFactory.named(Usage.class, Usage.C_PLUS_PLUS_API));
         this.compileConfiguration.getAttributes().attribute(OperatingSystem.OPERATING_SYSTEM_ATTRIBUTE, this.variant.getPlatform().getOperatingSystem());
         this.compileConfiguration.getAttributes().attribute(MachineArchitecture.ARCHITECTURE_ATTRIBUTE, this.variant.getPlatform().getMachineArchitecture());
-        this.compileConfiguration.extendsFrom(getImplementationDependencies());
+        this.compileConfiguration.extendsFrom(implementationConfiguration);
 
         ArtifactView includeDirs = compileConfiguration.getIncoming().artifactView(viewConfiguration -> {
             viewConfiguration.attributes(attributeContainer -> {
@@ -91,16 +89,8 @@ public abstract class AbstractNativeModuleWithCompileDependencies implements Sof
         return this.sourceFiles;
     }
 
-    public ComponentDependencies getDependencies() {
-        return dependencies;
-    }
-
-    public void dependencies(Action<? super ComponentDependencies> action) {
-        action.execute(getDependencies());
-    }
-
     public Configuration getImplementationDependencies() {
-        return dependencies.getImplementationDependencies();
+        return implementationConfiguration;
     }
 
     public FileCollection getIncludeDirs() {

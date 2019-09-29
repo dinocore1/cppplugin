@@ -5,6 +5,7 @@ import com.devsmart.cppplugin.tasks.CppCompileTask;
 import com.devsmart.cppplugin.tasks.CreateStaticLibrary;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.internal.artifacts.ArtifactAttributes;
@@ -44,6 +45,10 @@ public class CppLibraryPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
         project.getPluginManager().apply(LifecycleBasePlugin.class);
+
+        Configuration implementationConfig = project.getConfigurations().create("implementation");
+        implementationConfig.setCanBeConsumed(false);
+        implementationConfig.setCanBeResolved(false);
 
         // Add incoming artifact transforms
         final DependencyHandler dependencyHandler = project.getDependencies();

@@ -108,7 +108,7 @@ public class DefaultGccToolchain implements ToolChain {
             args.add("-std=" + spec.getCppStandard());
 
             if(spec.isPositionIndependent()) {
-                args.add("-PIC");
+                args.add("-fPIC");
             }
 
             args.add("-o");
