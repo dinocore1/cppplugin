@@ -14,11 +14,14 @@ import org.gradle.internal.operations.logging.BuildOperationLogger;
 import org.gradle.internal.operations.logging.BuildOperationLoggerFactory;
 
 import javax.inject.Inject;
+import java.io.File;
+import java.util.List;
+import java.util.Set;
 
 
 public class CreateStaticLibrary extends DefaultTask {
 
-    private final ConfigurableFileCollection source;
+    private final ConfigurableFileCollection objectFiles;
     private final RegularFileProperty outputFile;
     private final ListProperty<String> staticLibArgs;
     private final Property<ToolChain> toolChain;
@@ -26,7 +29,7 @@ public class CreateStaticLibrary extends DefaultTask {
 
     public CreateStaticLibrary() {
         ObjectFactory objectFactory = getProject().getObjects();
-        this.source = getProject().files();
+        this.objectFiles = getProject().files();
         this.outputFile = objectFactory.fileProperty();
         this.staticLibArgs = getProject().getObjects().listProperty(String.class);
         this.toolChain = objectFactory.property(ToolChain.class);
@@ -41,52 +44,59 @@ public class CreateStaticLibrary extends DefaultTask {
     @PathSensitive(PathSensitivity.RELATIVE)
     @InputFiles
     @SkipWhenEmpty
-    public FileCollection getSource() {
-        return source;
+    public ConfigurableFileCollection getObjectFiles() {
+        return objectFiles;
     }
 
     /**
      * Adds a set of object files to be linked. <p> The provided source object is evaluated as per {@link org.gradle.api.Project#files(Object...)}.
      */
     public void source(Object source) {
-        this.source.from(source);
+        this.objectFiles.from(source);
     }
 
-    @Inject
-    BuildOperationLoggerFactory getOperationLoggerFactory() {
-        throw new UnsupportedOperationException();
+    private class MyArchiverSpec implements StaticLibraryArchiverSpec {
+
+        private final BuildOperationLogger operationLogger;
+
+        MyArchiverSpec() {
+            this.operationLogger = getOperationLoggerFactory().newOperationLogger(getName(), getTemporaryDir());
+        }
+
+        @Override
+        public Set<File> getObjectFiles() {
+            return CreateStaticLibrary.this.getObjectFiles().getFiles();
+        }
+
+        @Override
+        public File getOutputFile() {
+            return CreateStaticLibrary.this.getOutputFile().getAsFile().get();
+        }
+
+        @Override
+        public List<String> getArgs() {
+            return CreateStaticLibrary.this.staticLibArgs.get();
+        }
+
+        @Override
+        public BuildOperationLogger getOperationLogger() {
+            return operationLogger;
+        }
+
+        @Override
+        public void setOperationLogger(BuildOperationLogger oplogger) {
+
+        }
     }
 
     @TaskAction
     public void link() {
-
-        StaticLibraryArchiverSpec spec = new DefaultStaticLibraryArchiverSpec();
-        spec.getObjectFiles().addAll(source.getFiles());
-        spec.setOutputFile(outputFile.get().getAsFile());
-        spec.getArgs().addAll(staticLibArgs.get());
-        BuildOperationLogger operationLogger = getOperationLoggerFactory().newOperationLogger(getName(), getTemporaryDir());
-        spec.setOperationLogger(operationLogger);
-
+        StaticLibraryArchiverSpec spec = new MyArchiverSpec();
+        spec.getOperationLogger().start();
         Tool<StaticLibraryArchiverSpec> tool = toolChain.get().getArchiveTool();
         WorkResult result = tool.execute(spec);
+        spec.getOperationLogger().done();
         setDidWork(result.getDidWork());
-
-
-        /*
-        StaticLibraryArchiverSpec spec = new DefaultStaticLibraryArchiverSpec();
-        spec.setTempDir(getTemporaryDir());
-        spec.setOutputFile(getOutputFile().get().getAsFile());
-        spec.objectFiles(getSource());
-        spec.args(getStaticLibArgs().get());
-
-        BuildOperationLogger operationLogger = getOperationLoggerFactory().newOperationLogger(getName(), getTemporaryDir());
-        spec.setOperationLogger(operationLogger);
-
-        Compiler<StaticLibraryArchiverSpec> compiler = createCompiler();
-        WorkResult result = BuildOperationLoggingCompilerDecorator.wrap(compiler).execute(spec);
-        setDidWork(result.getDidWork());
-        */
-
     }
 
     @OutputFile
@@ -107,5 +117,10 @@ public class CreateStaticLibrary extends DefaultTask {
     @Internal
     public Property<ToolChain> getToolChain() {
         return this.toolChain;
+    }
+
+    @Inject
+    protected BuildOperationLoggerFactory getOperationLoggerFactory() {
+        throw new UnsupportedOperationException();
     }
 }

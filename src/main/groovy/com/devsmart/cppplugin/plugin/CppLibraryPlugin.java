@@ -2,6 +2,7 @@ package com.devsmart.cppplugin.plugin;
 
 import com.devsmart.cppplugin.*;
 import com.devsmart.cppplugin.tasks.CppCompileTask;
+import com.devsmart.cppplugin.tasks.CreateStaticLibrary;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
@@ -9,6 +10,7 @@ import org.gradle.api.attributes.Usage;
 import org.gradle.api.internal.artifacts.ArtifactAttributes;
 import org.gradle.api.internal.artifacts.transform.UnzipTransform;
 import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.internal.operations.BuildOperationExecutor;
 import org.gradle.internal.work.WorkerLeaseService;
@@ -84,18 +86,28 @@ public class CppLibraryPlugin implements Plugin<Project> {
 
             VariantIdentity id = new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.STATIC);
             StaticLibrary staticLib = library.addStaticLibrary(id);
-            TaskProvider<CppCompileTask> compileTask = project.getTasks().register(staticLib.getNames().getTaskName("compile"), CppCompileTask.class, task -> {
+            Names names = staticLib.getNames();
+            TaskProvider<CppCompileTask> compileTask = project.getTasks().register(names.getTaskName("compile"), CppCompileTask.class, task -> {
                 task.getVariant().set(id);
                 task.getToolchain().set(toolChain);
                 task.getCppStandard().set(library.getCppStandard());
                 task.getSource().setFrom(staticLib.getCppSource());
                 task.getIncludes().setFrom(staticLib.getIncludeDirs());
-                task.getOutputDir().set(project.getLayout().getBuildDirectory().dir("obj/cpp"));
+                task.getOutputDir().set(project.getLayout().getBuildDirectory().dir("obj/" + names.getRelativePath()));
             });
             staticLib.getCompileTask().set(compileTask);
 
+            TaskProvider<CreateStaticLibrary> archiveTask = project.getTasks().register(staticLib.getNames().getTaskName("archive"), CreateStaticLibrary.class, task -> {
+                task.getToolChain().set(toolChain);
+                task.getObjectFiles().setFrom(staticLib.getCompileTask());
+                task.getOutputFile().set(project.getLayout().getBuildDirectory().file( project.provider(() -> {
+                    return "binary/" + names.getRelativePath() + "/" + library.getBaseName().get() + ".a";
+                })));
+
+            });
+
             project.getTasks().named("assemble", task -> {
-                task.dependsOn(compileTask);
+                task.dependsOn(archiveTask);
             });
 
         });

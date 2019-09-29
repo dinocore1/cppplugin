@@ -8,6 +8,7 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.*;
 import org.gradle.internal.operations.logging.BuildOperationLogger;
 import org.gradle.internal.operations.logging.BuildOperationLoggerFactory;
+import org.gradle.nativeplatform.Linkage;
 import org.gradle.work.InputChanges;
 
 import javax.inject.Inject;
@@ -94,6 +95,11 @@ public class CppCompileTask extends AbstractCompileTask {
         @Override
         public void setOperationLogger(BuildOperationLogger oplogger) {
 
+        }
+
+        @Override
+        public boolean isPositionIndependent() {
+            return variant.get().getLinkage() == Linkage.SHARED;
         }
     }
 

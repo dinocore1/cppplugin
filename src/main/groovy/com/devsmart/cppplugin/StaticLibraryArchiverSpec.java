@@ -1,13 +1,11 @@
 package com.devsmart.cppplugin;
 
 import java.io.File;
-import java.util.List;
+import java.util.Set;
 
 public interface StaticLibraryArchiverSpec extends ToolSpec {
 
-    List<File> getObjectFiles();
-    void objectFiles(Iterable<File> inputFiles);
+    Set<File> getObjectFiles();
 
     File getOutputFile();
-    void setOutputFile(File outputFile);
 }

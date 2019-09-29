@@ -102,6 +102,10 @@ public class DefaultGccToolchain implements ToolChain {
 
             args.add("-std=" + spec.getCppStandard());
 
+            if(spec.isPositionIndependent()) {
+                args.add("-PIC");
+            }
+
             args.add("-o");
             args.add(spec.getObjectFile(sourceFile).getAbsolutePath());
 

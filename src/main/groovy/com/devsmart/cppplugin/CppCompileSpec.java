@@ -12,7 +12,8 @@ public interface CppCompileSpec extends ToolSpec {
     Set<File> getSourceFiles();
     Set<File> getIncludeDirs();
     File getObjectFile(File sourceFile);
-    CppStandard getCppStandard();
     Map<String, String> getMacros();
+    CppStandard getCppStandard();
+    boolean isPositionIndependent();
 
 }
