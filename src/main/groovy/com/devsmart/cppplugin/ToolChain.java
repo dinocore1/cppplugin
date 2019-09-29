@@ -12,5 +12,6 @@ public interface ToolChain extends SoftwareComponent {
     Tool<StaticLibraryArchiverSpec> getArchiveTool();
 
     String getObjectFileExtention();
+    String getStaticLibraryFileExtention();
 
 }

@@ -1,6 +1,7 @@
 package com.devsmart.cppplugin;
 
 import org.gradle.api.Action;
+import org.gradle.api.Task;
 import org.gradle.api.artifacts.ArtifactView;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
@@ -11,6 +12,7 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.internal.artifacts.ArtifactAttributes;
 import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.Property;
 import org.gradle.language.ComponentDependencies;
 import org.gradle.language.internal.DefaultComponentDependencies;
 
@@ -26,6 +28,7 @@ public abstract class AbstractNativeModuleWithCompileDependencies implements Sof
     private final DefaultComponentDependencies dependencies;
     private final Configuration compileConfiguration;
     private final FileCollection includeDirs;
+    private final Property<Task> compileTask;
 
     public AbstractNativeModuleWithCompileDependencies(String name, Names names, VariantIdentity variant, FileCollection sourceFiles, FileCollection componentIncludeDirs, Configuration componentImplementation) {
         this.name = name;
@@ -52,6 +55,8 @@ public abstract class AbstractNativeModuleWithCompileDependencies implements Sof
         });
 
         this.includeDirs = componentIncludeDirs.plus(includeDirs.getFiles());
+
+        this.compileTask = objectFactory.property(Task.class);
     }
 
     @Inject
@@ -100,5 +105,9 @@ public abstract class AbstractNativeModuleWithCompileDependencies implements Sof
 
     public FileCollection getIncludeDirs() {
         return this.includeDirs;
+    }
+
+    public Property<Task> getCompileTask() {
+        return this.compileTask;
     }
 }

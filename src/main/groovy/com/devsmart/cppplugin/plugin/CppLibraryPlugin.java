@@ -51,8 +51,7 @@ public class CppLibraryPlugin implements Plugin<Project> {
 
         addHeaderZipTransform(dependencyHandler, objects);
 
-        ObjectFactory objectFactory = project.getObjects();
-        CppLibrary library = objectFactory.newInstance(CppLibrary.class, "main");
+        CppLibrary library = objects.newInstance(CppLibrary.class, "main");
         project.getExtensions().add("library", library);
         project.getComponents().add(library);
 
@@ -85,34 +84,72 @@ public class CppLibraryPlugin implements Plugin<Project> {
         project.getComponents().withType(ToolChain.class, toolChain -> {
 
             VariantIdentity id = new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.STATIC);
-            StaticLibrary staticLib = library.addStaticLibrary(id);
-            Names names = staticLib.getNames();
-            TaskProvider<CppCompileTask> compileTask = project.getTasks().register(names.getTaskName("compile"), CppCompileTask.class, task -> {
-                task.getVariant().set(id);
-                task.getToolchain().set(toolChain);
-                task.getCppStandard().set(library.getCppStandard());
-                task.getSource().setFrom(staticLib.getCppSource());
-                task.getIncludes().setFrom(staticLib.getIncludeDirs());
-                task.getOutputDir().set(project.getLayout().getBuildDirectory().dir("obj/" + names.getRelativePath()));
-            });
-            staticLib.getCompileTask().set(compileTask);
+            addStaticLibrary(toolChain, library, id, project);
 
-            TaskProvider<CreateStaticLibrary> archiveTask = project.getTasks().register(staticLib.getNames().getTaskName("archive"), CreateStaticLibrary.class, task -> {
-                task.getToolChain().set(toolChain);
-                task.getObjectFiles().setFrom(staticLib.getCompileTask());
-                task.getOutputFile().set(project.getLayout().getBuildDirectory().file( project.provider(() -> {
-                    return "binary/" + names.getRelativePath() + "/" + library.getBaseName().get() + ".a";
-                })));
+            id = new VariantIdentity(toolChain.getTargetPlatform(), false, Linkage.STATIC);
+            addStaticLibrary(toolChain, library, id, project);
 
-            });
+            id = new VariantIdentity(toolChain.getTargetPlatform(), true, Linkage.SHARED);
+            addSharedLibrary(toolChain, library, id, project);
 
-            project.getTasks().named("assemble", task -> {
-                task.dependsOn(archiveTask);
-            });
+            id = new VariantIdentity(toolChain.getTargetPlatform(), false, Linkage.SHARED);
+            addSharedLibrary(toolChain, library, id, project);
+
+        });
+    }
+
+    private void addStaticLibrary(ToolChain toolChain, CppLibrary library, VariantIdentity id, Project project) {
+        StaticLibrary staticLib = library.addStaticLibrary(id);
+        Names names = staticLib.getNames();
+        TaskProvider<CppCompileTask> compileTask = project.getTasks().register(names.getTaskName("compile"), CppCompileTask.class, task -> {
+            task.getVariant().set(id);
+            task.getToolchain().set(toolChain);
+            task.getCppStandard().set(library.getCppStandard());
+            task.getSource().setFrom(ToolChainHelper.getCppSource(staticLib.getSourceFiles()));
+            task.getIncludes().setFrom(staticLib.getIncludeDirs());
+            task.getOutputDir().set(project.getLayout().getBuildDirectory().dir("obj/" + names.getRelativePath()));
+        });
+        staticLib.getCompileTask().set(compileTask);
+
+        TaskProvider<CreateStaticLibrary> archiveTask = project.getTasks().register(staticLib.getNames().getTaskName("archive"), CreateStaticLibrary.class, task -> {
+            task.getToolChain().set(toolChain);
+            task.getObjectFiles().setFrom(staticLib.getCompileTask());
+            task.getOutputFile().set(project.getLayout().getBuildDirectory().file( project.provider(() -> {
+                return "binary/" + names.getRelativePath() + "/" + library.getBaseName().get() + "." + toolChain.getStaticLibraryFileExtention();
+            })));
 
         });
 
+        project.getTasks().named("assemble", task -> {
+            task.dependsOn(archiveTask);
+        });
+    }
 
+    private void addSharedLibrary(ToolChain toolChain, CppLibrary library, VariantIdentity id, Project project) {
+        SharedLibrary sharedLib = library.addSharedLibrary(id);
+        Names names = sharedLib.getNames();
+        TaskProvider<CppCompileTask> compileTask = project.getTasks().register(names.getTaskName("compile"), CppCompileTask.class, task -> {
+            task.getVariant().set(id);
+            task.getToolchain().set(toolChain);
+            task.getCppStandard().set(library.getCppStandard());
+            task.getSource().setFrom(ToolChainHelper.getCppSource(sharedLib.getSourceFiles()));
+            task.getIncludes().setFrom(sharedLib.getIncludeDirs());
+            task.getOutputDir().set(project.getLayout().getBuildDirectory().dir("obj/" + names.getRelativePath()));
+        });
+        sharedLib.getCompileTask().set(compileTask);
+
+        TaskProvider<CreateStaticLibrary> archiveTask = project.getTasks().register(sharedLib.getNames().getTaskName("archive"), CreateStaticLibrary.class, task -> {
+            task.getToolChain().set(toolChain);
+            task.getObjectFiles().setFrom(sharedLib.getCompileTask());
+            task.getOutputFile().set(project.getLayout().getBuildDirectory().file( project.provider(() -> {
+                return "binary/" + names.getRelativePath() + "/" + library.getBaseName().get() + "." + toolChain.getStaticLibraryFileExtention();
+            })));
+
+        });
+
+        project.getTasks().named("assemble", task -> {
+            task.dependsOn(archiveTask);
+        });
     }
 
     private void addHeaderZipTransform(DependencyHandler dependencyHandler, ObjectFactory objects) {

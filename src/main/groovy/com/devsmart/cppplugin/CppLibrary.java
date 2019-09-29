@@ -123,8 +123,12 @@ public class CppLibrary implements SoftwareComponent {
     public StaticLibrary addStaticLibrary(VariantIdentity variant) {
         Names names = Names.of(variant);
         StaticLibrary staticLibrary = getObjectFactory().newInstance(StaticLibrary.class, name, names, variant, cppSource, getAllIncludeDirs(), dependencies.getImplementationDependencies());
-
         return staticLibrary;
+    }
 
+    public SharedLibrary addSharedLibrary(VariantIdentity variant) {
+        Names names = Names.of(variant);
+        SharedLibrary sharedLibrary = getObjectFactory().newInstance(SharedLibrary.class, name, names, variant, cppSource, getAllIncludeDirs(), dependencies.getImplementationDependencies());
+        return sharedLibrary;
     }
 }

@@ -52,6 +52,11 @@ public class DefaultGccToolchain implements ToolChain {
     }
 
     @Override
+    public String getStaticLibraryFileExtention() {
+        return "a";
+    }
+
+    @Override
     public String getName() {
         return String.format("gcc %s", platform);
     }
