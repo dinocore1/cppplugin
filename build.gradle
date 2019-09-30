@@ -38,6 +38,9 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.0'
     //compile 'org.codehaus.groovy:groovy-all:2.3.11'
     testImplementation 'junit:junit:4.12'
+    testRuntime 'cglib:cglib:3.2.6'
+    testRuntime 'org.objenesis:objenesis:2.6'
+    testRuntime 'org.apache.commons:commons-lang3:3.0'
 
     testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
         exclude group: 'org.codehaus.groovy'

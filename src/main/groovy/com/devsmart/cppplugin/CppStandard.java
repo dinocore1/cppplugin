@@ -1,8 +1,11 @@
 package com.devsmart.cppplugin;
 
 import org.gradle.api.Named;
+import org.gradle.api.attributes.Attribute;
 
 public interface CppStandard extends Named {
+
+    Attribute<CppStandard> CPPSTANDARD_ATTRIBUTE = Attribute.of(CppStandard.class);
 
     String CPP98 = "c++98";
     String CPP03 = "c++03";

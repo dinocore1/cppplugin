@@ -1,8 +1,10 @@
 package com.devsmart.cppplugin;
 
 import org.gradle.api.Action;
+import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
+import org.gradle.api.attributes.Usage;
 import org.gradle.api.component.SoftwareComponent;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
@@ -46,6 +48,16 @@ public class CppLibrary implements SoftwareComponent {
         this.privateHeadersWithConvention = createDirView(privateHeaders, "src/" + name + "/cpp");
         this.publicHeaders = objectFactory.fileCollection();
         this.publicHeadersWithConvention = createDirView(publicHeaders, "src/" + name + "/public");
+
+
+
+
+        Configuration compileConfiguration = configurations.create("cppCompile");
+        compileConfiguration.setCanBeResolved(true);
+        compileConfiguration.setCanBeConsumed(true);
+        compileConfiguration.getAttributes().attribute(Usage.USAGE_ATTRIBUTE, objectFactory.named(Usage.class, Usage.C_PLUS_PLUS_API));
+        compileConfiguration.extendsFrom(dependencies.getImplementationDependencies());
+        //compileConfiguration.getOutgoing().artifact(headerZip);
 
     }
 
@@ -121,6 +133,15 @@ public class CppLibrary implements SoftwareComponent {
 
     public Property<CppStandard> getCppStandard() {
         return this.cppStandard;
+    }
+
+    public HeaderModule addHeaderModule() {
+        Names names = Names.of(this);
+        HeaderModule headerModule = getObjectFactory().newInstance(HeaderModule.class, names, baseName, "cpp");
+        headerModule.getCompileConfiguration().getAttributes().attribute(CppStandard.CPPSTANDARD_ATTRIBUTE, getObjectFactory().named(CppStandard.class, this.cppStandard.get().getName()));
+        headerModule.getHeaderFiles().setFrom(publicHeadersWithConvention);
+
+        return headerModule;
     }
 
     public StaticLibrary addStaticLibrary(VariantIdentity variant) {
