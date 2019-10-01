@@ -18,7 +18,8 @@ class NativeBasePluginFunctTest extends Specification {
         buildFile << """
             plugins {
                 id 'com.devsmart.toolchains' 
-                id 'com.devsmart.cpp-library' 
+                id 'com.devsmart.cpp-library'
+                id 'maven-publish'
             }
             
             toolchains {
@@ -100,6 +101,67 @@ class NativeBasePluginFunctTest extends Specification {
 
         then:
         result.output.contains("FAILED");
+
+    }
+
+    def "publish correctly"() {
+
+        given:
+        buildFile << """
+
+            group 'com.devsmart'
+            version '1.0-SNAPSHOT'
+
+            library {
+              cppStandard 'c++11'
+            }
+            
+            /*
+            publishing {
+                repositories {
+                    maven {
+                        url 'https://artifactory.videray.com/artifactory/videray-native-libs'
+                        credentials {
+                            username = 'paul'
+                            password = 'jj14nb3e'
+                        }
+                    }
+                }
+            }
+            */
+            
+        """
+
+        File mainSrcDir = testProjectDir.newFolder("src", "main", "cpp");
+        File srcFile = new File(mainSrcDir, "hello.cpp");
+        srcFile << """
+            #include <iostream>
+            
+            void sayhello() {
+              std::cout << "hello world" << std::endl;
+            }
+            
+          
+        """
+
+        File publicHeaderDir = testProjectDir.newFolder("src", "main", "public")
+        File headerFile = new File(publicHeaderDir, "hello.h");
+        headerFile << """
+        void sayhello();
+        """
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withPluginClasspath()
+                .withArguments('publishToMavenLocal')
+                .withDebug(true)
+                .build()
+
+        then:
+        result.task(":publishToMavenLocal").outcome == SUCCESS
+
+
 
     }
 }

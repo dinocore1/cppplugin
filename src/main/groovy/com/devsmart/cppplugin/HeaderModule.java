@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.internal.component.SoftwareComponentInternal;
 import org.gradle.api.internal.component.UsageContext;
 import org.gradle.api.model.ObjectFactory;
@@ -13,6 +14,7 @@ import org.gradle.api.provider.Provider;
 import org.gradle.language.cpp.internal.DefaultUsageContext;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.Set;
 
 public class HeaderModule implements SoftwareComponentInternal {
@@ -21,6 +23,7 @@ public class HeaderModule implements SoftwareComponentInternal {
     private final Provider<String> baseName;
     private final Configuration compileConfiguration;
     private final ConfigurableFileCollection headerFiles;
+    private final RegularFileProperty headerZipFile;
 
     @Inject
     public HeaderModule(Names names, Provider<String> baseName, String languageName, ConfigurationContainer configurations, ObjectFactory objectFactory) {
@@ -34,6 +37,7 @@ public class HeaderModule implements SoftwareComponentInternal {
         this.compileConfiguration.setCanBeConsumed(true);
 
         this.headerFiles = objectFactory.fileCollection();
+        this.headerZipFile = objectFactory.fileProperty();
     }
 
     public Names getNames() {
@@ -61,4 +65,7 @@ public class HeaderModule implements SoftwareComponentInternal {
     }
 
 
+    public RegularFileProperty getHeaderZipFile() {
+        return this.headerZipFile;
+    }
 }

@@ -14,7 +14,9 @@ import org.gradle.api.component.ComponentWithVariants;
 import org.gradle.api.component.PublishableComponent;
 import org.gradle.api.component.SoftwareComponent;
 import org.gradle.api.component.SoftwareComponentContainer;
+import org.gradle.api.file.Directory;
 import org.gradle.api.internal.artifacts.ArtifactAttributes;
+import org.gradle.api.internal.artifacts.dsl.LazyPublishArtifact;
 import org.gradle.api.internal.artifacts.transform.UnzipTransform;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Provider;
@@ -71,13 +73,34 @@ public class CppLibraryPlugin implements Plugin<Project> {
         library.getBaseName().convention(project.getName());
 
         HeaderModule headerModule = library.addHeaderModule();
-        TaskProvider<Zip> zipHeadersTask = project.getTasks().register(headerModule.getNames().getTaskName("zipHeaders"), Zip.class, task -> {
-            task.from(headerModule.getHeaderFiles());
-            task.into(project.getLayout().getBuildDirectory().file(project.provider(() -> {
-                return "headers/" + headerModule.getNames().getRelativePath() + "/" + library.getBaseName().get() + ".zip";
-            })));
+        Provider<String> headerZipFilename = project.provider(() -> {
+            return library.getBaseName().get() + ".zip";
         });
-        headerModule.getCompileConfiguration().getOutgoing().artifact(zipHeadersTask);
+        Provider<Directory> headerZipDir = project.getLayout().getBuildDirectory().dir("headers/" + headerModule.getNames().getRelativePath());
+        headerModule.getHeaderZipFile().set(project.getLayout().getBuildDirectory().file(project.provider(() -> {
+            return "headers/" + headerModule.getNames().getRelativePath() + "/" + library.getBaseName().get() + ".zip";
+        })));
+        TaskProvider<Zip> zipHeadersTask = project.getTasks().register(headerModule.getNames().getTaskName("zipHeaders"), Zip.class, task -> {
+            task.getArchiveFileName().set(headerZipFilename);
+            task.getDestinationDirectory().set(headerZipDir);
+            task.from(headerModule.getHeaderFiles());
+            //task.into(headerModule.getHeaderZipFile().get().getAsFile());
+        });
+        headerModule.getCompileConfiguration().getOutgoing().artifact(headerModule.getHeaderZipFile(), config -> {
+            config.builtBy(zipHeadersTask);
+        });
+
+        project.getPluginManager().withPlugin("maven-publish", plugin -> {
+            project.getExtensions().configure(PublishingExtension.class, publishing -> {
+                publishing.getPublications().create("main", MavenPublication.class, publication -> {
+                    //publication.setGroupId(project.getGroup().toString());
+                    publication.setArtifactId(project.getName());
+                    //publication.setVersion(project.getVersion().toString());
+                    publication.from(headerModule);
+
+                });
+            });
+        });
 
 
         //final BuildOperationExecutor buildOperationExecutor = serviceRegistry.get(BuildOperationExecutor.class);
