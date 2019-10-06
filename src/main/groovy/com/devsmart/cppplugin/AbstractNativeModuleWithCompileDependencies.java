@@ -1,5 +1,6 @@
 package com.devsmart.cppplugin;
 
+import com.google.common.collect.Sets;
 import org.gradle.api.Action;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.ArtifactView;
@@ -11,14 +12,18 @@ import org.gradle.api.component.SoftwareComponent;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.internal.artifacts.ArtifactAttributes;
+import org.gradle.api.internal.component.SoftwareComponentInternal;
+import org.gradle.api.internal.component.UsageContext;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.language.ComponentDependencies;
+import org.gradle.language.cpp.internal.DefaultUsageContext;
 import org.gradle.language.internal.DefaultComponentDependencies;
 
 import javax.inject.Inject;
+import java.util.Set;
 
-public abstract class AbstractNativeModuleWithCompileDependencies implements SoftwareComponent {
+public abstract class AbstractNativeModuleWithCompileDependencies implements SoftwareComponentInternal {
 
 
     private final String name;
@@ -99,5 +104,12 @@ public abstract class AbstractNativeModuleWithCompileDependencies implements Sof
 
     public Property<Task> getCompileTask() {
         return this.compileTask;
+    }
+
+    @Override
+    public Set<? extends UsageContext> getUsages() {
+        return Sets.newHashSet(
+                new DefaultUsageContext(compileConfiguration.getName(), compileConfiguration.getAttributes(), compileConfiguration.getAllArtifacts(), compileConfiguration)
+        );
     }
 }

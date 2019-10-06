@@ -1,13 +1,18 @@
 package com.devsmart.cppplugin;
 
+import com.google.common.collect.Sets;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.internal.component.UsageContext;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
+import org.gradle.language.cpp.internal.DefaultUsageContext;
 
-public class AbstractNativeModuleWithLinkDependencies extends AbstractNativeModuleWithCompileDependencies {
+import java.util.Set;
+
+public abstract class AbstractNativeModuleWithLinkDependencies extends AbstractNativeModuleWithCompileDependencies {
 
     private final Configuration linkConfiguration;
     private final Property<Task> linkTask;
@@ -35,5 +40,13 @@ public class AbstractNativeModuleWithLinkDependencies extends AbstractNativeModu
 
     public Property<Task> getLinkTask() {
         return this.linkTask;
+    }
+
+    @Override
+    public Set<? extends UsageContext> getUsages() {
+        Set usageContexts = super.getUsages();
+        DefaultUsageContext linkUsage = new DefaultUsageContext(linkConfiguration.getName(), linkConfiguration.getAttributes(), linkConfiguration.getAllArtifacts(), linkConfiguration);
+        usageContexts.add(linkUsage);
+        return usageContexts;
     }
 }

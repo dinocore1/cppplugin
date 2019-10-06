@@ -89,7 +89,7 @@ public class CppLibraryPlugin implements Plugin<Project> {
 
         project.getPluginManager().withPlugin("maven-publish", plugin -> {
             project.getExtensions().configure(PublishingExtension.class, publishing -> {
-                publishing.getPublications().create("main", MavenPublication.class, publication -> {
+                publishing.getPublications().create(headerModule.getNames().withSuffix("headers"), MavenPublication.class, publication -> {
                     //publication.setGroupId(project.getGroup().toString());
                     publication.setArtifactId(project.getName());
                     //publication.setVersion(project.getVersion().toString());
@@ -164,6 +164,18 @@ public class CppLibraryPlugin implements Plugin<Project> {
 
         project.getTasks().named("assemble", task -> {
             task.dependsOn(archiveTask);
+        });
+
+        project.getPluginManager().withPlugin("maven-publish", plugin -> {
+            project.getExtensions().configure(PublishingExtension.class, publishing -> {
+                publishing.getPublications().create(staticLib.getNames().withSuffix("staticLibrary"), MavenPublication.class, publication -> {
+                    //publication.setGroupId(project.getGroup().toString());
+                    publication.setArtifactId(project.getName());
+                    //publication.setVersion(project.getVersion().toString());
+                    publication.from(staticLib);
+
+                });
+            });
         });
     }
 
