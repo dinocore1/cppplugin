@@ -3,45 +3,24 @@ package com.devsmart.cppplugin.plugin;
 import com.devsmart.cppplugin.*;
 import com.devsmart.cppplugin.tasks.CppCompileTask;
 import com.devsmart.cppplugin.tasks.CreateStaticLibrary;
-import org.gradle.api.DomainObjectSet;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.ModuleVersionIdentifier;
-import org.gradle.api.artifacts.dsl.DependencyHandler;
-import org.gradle.api.attributes.Usage;
-import org.gradle.api.component.ComponentWithVariants;
-import org.gradle.api.component.PublishableComponent;
-import org.gradle.api.component.SoftwareComponent;
-import org.gradle.api.component.SoftwareComponentContainer;
 import org.gradle.api.file.Directory;
-import org.gradle.api.internal.artifacts.ArtifactAttributes;
-import org.gradle.api.internal.artifacts.dsl.LazyPublishArtifact;
-import org.gradle.api.internal.artifacts.transform.UnzipTransform;
+import org.gradle.api.file.RegularFile;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.publish.PublishingExtension;
-import org.gradle.api.publish.maven.MavenArtifact;
 import org.gradle.api.publish.maven.MavenPublication;
-import org.gradle.api.publish.maven.internal.publication.MavenPublicationInternal;
-import org.gradle.api.publish.maven.internal.publisher.MutableMavenProjectIdentity;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.Zip;
 import org.gradle.internal.operations.BuildOperationExecutor;
 import org.gradle.internal.work.WorkerLeaseService;
-import org.gradle.language.base.plugins.LifecycleBasePlugin;
-import org.gradle.language.nativeplatform.internal.PublicationAwareComponent;
 import org.gradle.language.nativeplatform.internal.toolchains.ToolChainSelector;
 import org.gradle.nativeplatform.Linkage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-
-import java.util.Set;
-
-import static org.gradle.api.artifacts.type.ArtifactTypeDefinition.DIRECTORY_TYPE;
-import static org.gradle.api.artifacts.type.ArtifactTypeDefinition.ZIP_TYPE;
 
 public class CppLibraryPlugin implements Plugin<Project> {
 
@@ -141,7 +120,7 @@ public class CppLibraryPlugin implements Plugin<Project> {
     }
 
     private void addStaticLibrary(ToolChain toolChain, CppLibrary library, VariantIdentity id, Project project) {
-        StaticLibrary staticLib = library.addStaticLibrary(id);
+        DefaultStaticLibrary staticLib = library.addStaticLibrary(id);
         Names names = staticLib.getNames();
         TaskProvider<CppCompileTask> compileTask = project.getTasks().register(names.getTaskName("compile"), CppCompileTask.class, task -> {
             task.getVariant().set(id);
@@ -153,17 +132,24 @@ public class CppLibraryPlugin implements Plugin<Project> {
         });
         staticLib.getCompileTask().set(compileTask);
 
+        Provider<RegularFile> staticLibraryFile = project.getLayout().getBuildDirectory().file(project.provider(() -> {
+            return "binary/" + names.getRelativePath() + "/" + library.getBaseName().get() + "." + toolChain.getStaticLibraryFileExtention();
+        }));
+
         TaskProvider<CreateStaticLibrary> archiveTask = project.getTasks().register(staticLib.getNames().getTaskName("archive"), CreateStaticLibrary.class, task -> {
             task.getToolChain().set(toolChain);
             task.getObjectFiles().setFrom(staticLib.getCompileTask());
-            task.getOutputFile().set(project.getLayout().getBuildDirectory().file( project.provider(() -> {
-                return "binary/" + names.getRelativePath() + "/" + library.getBaseName().get() + "." + toolChain.getStaticLibraryFileExtention();
-            })));
+            task.getOutputFile().set(staticLibraryFile);
 
         });
 
         project.getTasks().named("assemble", task -> {
             task.dependsOn(archiveTask);
+        });
+
+        staticLib.getLinkConfiguration().getOutgoing().artifact(staticLibraryFile, config -> {
+            config.builtBy(archiveTask);
+            config.setClassifier("staticLib");
         });
 
         project.getPluginManager().withPlugin("maven-publish", plugin -> {

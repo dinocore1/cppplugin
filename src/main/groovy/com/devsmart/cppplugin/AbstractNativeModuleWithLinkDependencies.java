@@ -34,7 +34,7 @@ public abstract class AbstractNativeModuleWithLinkDependencies extends AbstractN
 
     }
 
-    public FileCollection getLinkLibraries() {
+    public Configuration getLinkConfiguration() {
         return linkConfiguration;
     }
 

@@ -1,9 +1,15 @@
 package com.devsmart.cppplugin.components;
 
-import com.devsmart.cppplugin.tasks.CreateStaticLibrary;
+import org.gradle.api.Task;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.component.SoftwareComponent;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.Provider;
 
-public interface NativeStaticLibrary extends NativeComponentWithObjectFiles, NativeComponentWithLinktimeUsage {
+public interface NativeStaticLibrary extends SoftwareComponent {
 
-    Provider<? extends CreateStaticLibrary> getCreateTask();
+    RegularFileProperty getStaticLibrary();
+    Provider<Task> getCreateLibraryTask();
+    Provider<Configuration> getLinkConfiguration();
+
 }

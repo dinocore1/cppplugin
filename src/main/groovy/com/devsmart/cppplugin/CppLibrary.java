@@ -1,7 +1,6 @@
 package com.devsmart.cppplugin;
 
 import org.gradle.api.Action;
-import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.attributes.Usage;
@@ -143,9 +142,9 @@ public class CppLibrary implements SoftwareComponent {
         return headerModule;
     }
 
-    public StaticLibrary addStaticLibrary(VariantIdentity variant) {
+    public DefaultStaticLibrary addStaticLibrary(VariantIdentity variant) {
         Names names = Names.of(variant);
-        StaticLibrary staticLibrary = getObjectFactory().newInstance(StaticLibrary.class, name, names, variant, cppSource, getAllIncludeDirs(), dependencies.getImplementationDependencies());
+        DefaultStaticLibrary staticLibrary = getObjectFactory().newInstance(DefaultStaticLibrary.class, name, names, variant, cppSource, getAllIncludeDirs(), dependencies.getImplementationDependencies());
         return staticLibrary;
     }
 
