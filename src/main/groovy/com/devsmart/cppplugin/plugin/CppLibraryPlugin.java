@@ -73,22 +73,19 @@ public class CppLibraryPlugin implements Plugin<Project> {
         library.getBaseName().convention(project.getName());
 
         HeaderModule headerModule = library.addHeaderModule();
-        Provider<String> headerZipFilename = project.provider(() -> {
-            return library.getBaseName().get() + ".zip";
+
+        Provider<String> headerZipFilename = library.getBaseName().map(baseName -> {
+           return baseName + ".zip";
         });
         Provider<Directory> headerZipDir = project.getLayout().getBuildDirectory().dir("headers/" + headerModule.getNames().getRelativePath());
         headerModule.getHeaderZipFile().set(project.getLayout().getBuildDirectory().file(project.provider(() -> {
             return "headers/" + headerModule.getNames().getRelativePath() + "/" + library.getBaseName().get() + ".zip";
         })));
-        TaskProvider<Zip> zipHeadersTask = project.getTasks().register(headerModule.getNames().getTaskName("zipHeaders"), Zip.class, task -> {
+        headerModule.getZipHeadersTask().set(project.getTasks().register(headerModule.getNames().getTaskName("zipHeaders"), Zip.class, task -> {
             task.getArchiveFileName().set(headerZipFilename);
             task.getDestinationDirectory().set(headerZipDir);
             task.from(headerModule.getHeaderFiles());
-            //task.into(headerModule.getHeaderZipFile().get().getAsFile());
-        });
-        headerModule.getCompileConfiguration().getOutgoing().artifact(headerModule.getHeaderZipFile(), config -> {
-            config.builtBy(zipHeadersTask);
-        });
+        }));
 
         project.getPluginManager().withPlugin("maven-publish", plugin -> {
             project.getExtensions().configure(PublishingExtension.class, publishing -> {

@@ -137,8 +137,7 @@ public class CppLibrary implements SoftwareComponent {
 
     public HeaderModule addHeaderModule() {
         Names names = Names.of(this);
-        HeaderModule headerModule = getObjectFactory().newInstance(HeaderModule.class, names, baseName, "cpp");
-        headerModule.getCompileConfiguration().getAttributes().attribute(CppStandard.CPPSTANDARD_ATTRIBUTE, getObjectFactory().named(CppStandard.class, this.cppStandard.get().getName()));
+        HeaderModule headerModule = getObjectFactory().newInstance(CppHeaderModule.class, names, baseName, cppStandard);
         headerModule.getHeaderFiles().setFrom(publicHeadersWithConvention);
 
         return headerModule;
