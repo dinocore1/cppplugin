@@ -3,6 +3,8 @@ package com.devsmart.cppplugin.plugin;
 import com.devsmart.cppplugin.Usage;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.internal.artifacts.ArtifactAttributes;
 import org.gradle.api.internal.artifacts.transform.UnzipTransform;
@@ -17,6 +19,17 @@ public class CppBasePlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
         project.getPluginManager().apply(NativeBasePlugin.class);
+
+        ConfigurationContainer configurations = project.getConfigurations();
+        ObjectFactory objectFactory = project.getObjects();
+
+        Configuration implementationConfiguration = configurations.getByName("implementation");
+
+        Configuration compileConfiguration = configurations.create("cppCompile");
+        compileConfiguration.setCanBeResolved(false);
+        compileConfiguration.setCanBeConsumed(false);
+        compileConfiguration.getAttributes().attribute(org.gradle.api.attributes.Usage.USAGE_ATTRIBUTE, objectFactory.named(org.gradle.api.attributes.Usage.class, org.gradle.api.attributes.Usage.C_PLUS_PLUS_API));
+        compileConfiguration.extendsFrom(implementationConfiguration);
 
         // Add incoming artifact transforms
         final DependencyHandler dependencyHandler = project.getDependencies();

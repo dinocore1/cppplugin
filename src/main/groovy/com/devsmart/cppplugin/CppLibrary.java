@@ -4,22 +4,28 @@ import org.gradle.api.Action;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.attributes.Usage;
+import org.gradle.api.component.ComponentWithVariants;
 import org.gradle.api.component.SoftwareComponent;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.FileTree;
 import org.gradle.api.file.ProjectLayout;
+import org.gradle.api.internal.component.SoftwareComponentInternal;
+import org.gradle.api.internal.component.UsageContext;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.util.PatternSet;
 import org.gradle.language.internal.DefaultComponentDependencies;
+import org.gradle.language.nativeplatform.internal.PublicationAwareComponent;
 
 import javax.inject.Inject;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
-public class CppLibrary implements SoftwareComponent {
+public class CppLibrary implements SoftwareComponentInternal {
 
     private final String name;
     private final Property<String> baseName;
@@ -31,6 +37,7 @@ public class CppLibrary implements SoftwareComponent {
     private final ConfigurableFileCollection publicHeaders;
     private final FileCollection publicHeadersWithConvention;
     private final Property<CppStandard> cppStandard;
+    private final Set<SoftwareComponentInternal> variants;
 
 
     @Inject
@@ -48,15 +55,8 @@ public class CppLibrary implements SoftwareComponent {
         this.publicHeaders = objectFactory.fileCollection();
         this.publicHeadersWithConvention = createDirView(publicHeaders, "src/" + name + "/public");
 
+        this.variants = new HashSet<>();
 
-
-
-        Configuration compileConfiguration = configurations.create("cppCompile");
-        compileConfiguration.setCanBeResolved(true);
-        compileConfiguration.setCanBeConsumed(true);
-        compileConfiguration.getAttributes().attribute(Usage.USAGE_ATTRIBUTE, objectFactory.named(Usage.class, Usage.C_PLUS_PLUS_API));
-        compileConfiguration.extendsFrom(dependencies.getImplementationDependencies());
-        //compileConfiguration.getOutgoing().artifact(headerZip);
 
     }
 
@@ -139,18 +139,32 @@ public class CppLibrary implements SoftwareComponent {
         HeaderModule headerModule = getObjectFactory().newInstance(CppHeaderModule.class, names, baseName, cppStandard);
         headerModule.getHeaderFiles().setFrom(publicHeadersWithConvention);
 
+        variants.add(headerModule);
+
         return headerModule;
     }
 
     public DefaultStaticLibrary addStaticLibrary(VariantIdentity variant) {
         Names names = Names.of(variant);
         DefaultStaticLibrary staticLibrary = getObjectFactory().newInstance(DefaultStaticLibrary.class, name, names, variant, cppSource, getAllIncludeDirs(), dependencies.getImplementationDependencies());
+        variants.add(staticLibrary);
         return staticLibrary;
     }
 
     public SharedLibrary addSharedLibrary(VariantIdentity variant) {
         Names names = Names.of(variant);
         SharedLibrary sharedLibrary = getObjectFactory().newInstance(SharedLibrary.class, name, names, variant, cppSource, getAllIncludeDirs(), dependencies.getImplementationDependencies());
+        variants.add(sharedLibrary);
         return sharedLibrary;
+    }
+
+    @Override
+    public Set<? extends UsageContext> getUsages() {
+        HashSet<UsageContext> retval = new HashSet<>();
+        for(SoftwareComponentInternal variant : variants) {
+            retval.addAll(variant.getUsages());
+        }
+
+        return retval;
     }
 }
