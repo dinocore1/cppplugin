@@ -3,6 +3,7 @@ package com.devsmart.cppplugin.plugin;
 import com.devsmart.cppplugin.*;
 import com.devsmart.cppplugin.tasks.CppCompileTask;
 import com.devsmart.cppplugin.tasks.CreateStaticLibrary;
+import com.devsmart.cppplugin.tasks.LinkSharedLibrary;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.file.Directory;
@@ -180,17 +181,24 @@ public class CppLibraryPlugin implements Plugin<Project> {
         });
         sharedLib.getCompileTask().set(compileTask);
 
-        TaskProvider<CreateStaticLibrary> archiveTask = project.getTasks().register(sharedLib.getNames().getTaskName("archive"), CreateStaticLibrary.class, task -> {
+        Provider<RegularFile> sharedLinkFile = project.getLayout().getBuildDirectory().file(project.provider(() -> {
+            return "binary/" + names.getRelativePath() + "/" + library.getBaseName().get() + "." + toolChain.getSharedLibraryFileExtention();
+        }));
+
+        TaskProvider<LinkSharedLibrary> linkTask = project.getTasks().register(sharedLib.getNames().getTaskName("link"), LinkSharedLibrary.class, task -> {
             task.getToolChain().set(toolChain);
             task.getObjectFiles().setFrom(sharedLib.getCompileTask());
-            task.getOutputFile().set(project.getLayout().getBuildDirectory().file( project.provider(() -> {
-                return "binary/" + names.getRelativePath() + "/" + library.getBaseName().get() + "." + toolChain.getStaticLibraryFileExtention();
-            })));
+            task.getOutputFile().set(sharedLinkFile);
 
         });
 
+        sharedLib.getLinkConfiguration().getOutgoing().artifact(sharedLinkFile, config -> {
+            config.builtBy(linkTask);
+            config.setClassifier(names.withPrefix("sharedLib"));
+        });
+
         project.getTasks().named("assemble", task -> {
-            task.dependsOn(archiveTask);
+            task.dependsOn(linkTask);
         });
     }
 

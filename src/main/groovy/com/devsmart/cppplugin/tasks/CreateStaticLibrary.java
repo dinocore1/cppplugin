@@ -33,9 +33,7 @@ public class CreateStaticLibrary extends DefaultTask {
         this.outputFile = objectFactory.fileProperty();
         this.staticLibArgs = getProject().getObjects().listProperty(String.class);
         this.toolChain = objectFactory.property(ToolChain.class);
-        this.platformProvider = getProject().provider( () ->
-           toolChain.get().getTargetPlatform()
-        );
+        this.platformProvider = toolChain.map(tools -> tools.getTargetPlatform());
     }
 
     /**

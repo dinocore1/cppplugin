@@ -22,6 +22,7 @@ public class DefaultGccToolchain implements ToolChain {
     private final ObjectFactory objectFactory;
     private final CppCompiler cppCompiler;
     private final ArStaticLibraryArchiver archiveTool;
+    private final CppLinker linkerTool;
     private Platform platform;
 
     @Inject
@@ -29,6 +30,7 @@ public class DefaultGccToolchain implements ToolChain {
         this.objectFactory = objectFactory;
         this.cppCompiler = new CppCompiler(executor, new DefaultCommandLineToolInvocationWorker("c++", execActionFactory), workerLeaseService);
         this.archiveTool = new ArStaticLibraryArchiver(executor, new DefaultCommandLineToolInvocationWorker("ar", execActionFactory), workerLeaseService);
+        this.linkerTool = new CppLinker(executor, new DefaultCommandLineToolInvocationWorker("c++", execActionFactory), workerLeaseService);
     }
 
     @Override
@@ -39,6 +41,11 @@ public class DefaultGccToolchain implements ToolChain {
     @Override
     public Tool<CppCompileSpec> getCppCompiler() {
         return this.cppCompiler;
+    }
+
+    @Override
+    public Tool<SharedLibraryLinkerSpec> getLinkerTool() {
+        return this.linkerTool;
     }
 
     @Override
@@ -54,6 +61,11 @@ public class DefaultGccToolchain implements ToolChain {
     @Override
     public String getStaticLibraryFileExtention() {
         return "a";
+    }
+
+    @Override
+    public String getSharedLibraryFileExtention() {
+        return "so";
     }
 
     @Override
@@ -74,6 +86,9 @@ public class DefaultGccToolchain implements ToolChain {
         config.execute(archiveTool);
     }
 
+    public void linkerTool(Action<? super CppLinker> config) {
+        config.execute(linkerTool);
+    }
 
     private static class CppCompiler extends AbstractTool<CppCompileSpec> {
 
@@ -162,6 +177,38 @@ public class DefaultGccToolchain implements ToolChain {
             args.add(spec.getOutputFile().getAbsolutePath());
             for (File file : spec.getObjectFiles()) {
                 args.add(file.getAbsolutePath());
+            }
+            return args;
+        }
+    }
+
+    private static class CppLinker extends AbstractTool<SharedLibraryLinkerSpec> implements ArgsTransformer<SharedLibraryLinkerSpec> {
+
+        public CppLinker(BuildOperationExecutor buildOperationExecutor, CommandLineToolInvocationWorker commandLineToolInvocationWorker, WorkerLeaseService workerLeaseService) {
+            super(buildOperationExecutor, commandLineToolInvocationWorker, workerLeaseService);
+        }
+
+        @Override
+        protected Action<BuildOperationQueue<CommandLineToolInvocation>> newInvocationAction(SharedLibraryLinkerSpec spec) {
+            return queue -> {
+                CommandLineToolInvocation invocation = newInvocation("linking ".concat(spec.getOutputFile().getName()),
+                        getArgs(spec), spec.getOperationLogger());
+
+                queue.setLogLocation(spec.getOperationLogger().getLogLocation());
+                queue.add(invocation);
+            };
+        }
+
+
+        @Override
+        public List<String> getArgs(SharedLibraryLinkerSpec spec) {
+            List<String> args = new ArrayList<>();
+            args.addAll(spec.getArgs());
+            args.add("--shared");
+            args.add("-o");
+            args.add(spec.getOutputFile().getAbsolutePath());
+            for(File objectFile : spec.getObjectFiles()) {
+                args.add(objectFile.getAbsolutePath());
             }
             return args;
         }
